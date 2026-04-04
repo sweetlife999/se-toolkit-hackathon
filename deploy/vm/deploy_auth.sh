@@ -59,6 +59,19 @@ echo "[2/10] Starting PostgreSQL container"
 cd "${PROJECT_ROOT}"
 docker compose up -d db
 
+echo "Waiting for PostgreSQL to become ready"
+for _ in {1..30}; do
+  if docker compose exec -T db pg_isready -U "${DB_USER}" -d "${DB_NAME}" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
+
+if ! docker compose exec -T db pg_isready -U "${DB_USER}" -d "${DB_NAME}" >/dev/null 2>&1; then
+  echo "PostgreSQL did not become ready in time"
+  exit 1
+fi
+
 echo "[3/10] Preparing backend virtual environment"
 cd "${BACKEND_DIR}"
 python3 -m venv .venv
@@ -97,7 +110,8 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable --now viberrands-auth
+systemctl enable viberrands-auth
+systemctl restart viberrands-auth
 
 echo "[6/10] Building frontend"
 cd "${FRONTEND_DIR}"
