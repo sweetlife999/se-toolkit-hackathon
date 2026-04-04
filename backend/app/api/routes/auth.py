@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -14,16 +15,22 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(payload: UserRegister, db: Session = Depends(get_db)) -> User:
-    existing_user = db.query(User).filter(User.telegram_username == payload.telegram_username).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Telegram username is already registered")
-
     user = User(
         telegram_username=payload.telegram_username,
         hashed_password=get_password_hash(payload.password),
     )
+
     db.add(user)
-    db.commit()
+
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Telegram username is already registered") from exc
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Could not create user") from exc
+
     db.refresh(user)
     return user
 
