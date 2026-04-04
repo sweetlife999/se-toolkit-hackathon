@@ -29,11 +29,13 @@ export default function LoginPage() {
     <div className="auth-wrapper">
       <form className="auth-card" onSubmit={onSubmit}>
         <h1>Login to VibErrands</h1>
-        <label>Telegram username</label>
+        <label>Telegram handle</label>
         <input
           value={telegramUsername}
           onChange={(e) => setTelegramUsername(e.target.value)}
           placeholder="@username"
+          pattern="^@[A-Za-z0-9_]{3,63}$"
+          title="Handle must start with @ and contain only letters, numbers, or underscores"
           required
         />
 

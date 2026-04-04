@@ -8,7 +8,7 @@ Auth-first release baseline for VibErrands.
 - Frontend: React (Vite)
 
 ## Implemented now
-- Registration with `telegram_username` + `password`
+- Registration with `telegram handle` (`@username`) + `password`
 - Login with JWT access token
 - Protected endpoint: get current user profile
 - Frontend pages: register, login, profile, logout
@@ -48,7 +48,7 @@ Frontend runs at `http://localhost:5173` and expects backend at `http://localhos
 - `POST /auth/register`
 ```json
 {
-  "telegram_username": "my_telegram",
+  "telegram_username": "@my_telegram",
   "password": "secret123"
 }
 ```

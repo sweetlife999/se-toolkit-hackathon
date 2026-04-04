@@ -28,13 +28,16 @@ export default function RegisterPage() {
     <div className="auth-wrapper">
       <form className="auth-card" onSubmit={onSubmit}>
         <h1>Create VibErrands account</h1>
-        <label>Telegram username</label>
+        <label>Telegram handle</label>
         <input
           value={telegramUsername}
           onChange={(e) => setTelegramUsername(e.target.value)}
           placeholder="@username"
+          pattern="^@[A-Za-z0-9_]{3,63}$"
+          title="Handle must start with @ and contain only letters, numbers, or underscores"
           required
         />
+        <small>Use your handle, for example @username.</small>
 
         <label>Password</label>
         <input

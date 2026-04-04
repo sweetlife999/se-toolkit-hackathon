@@ -2,7 +2,12 @@ from pydantic import BaseModel, Field
 
 
 class UserRegister(BaseModel):
-    telegram_username: str = Field(min_length=3, max_length=64)
+    telegram_username: str = Field(
+        min_length=4,
+        max_length=64,
+        pattern=r"^@[A-Za-z0-9_]{3,63}$",
+        description="Telegram handle starting with @",
+    )
     password: str = Field(min_length=6, max_length=128)
 
 
