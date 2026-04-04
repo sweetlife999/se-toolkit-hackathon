@@ -13,11 +13,11 @@ This folder contains a one-shot script and templates to deploy the current VibEr
 ## Prerequisites
 - Ubuntu 22.04+ VM
 - Domain DNS A-record pointing to VM IP (for production)
-- Project already cloned to `/opt/viberrands` (or set `PROJECT_ROOT`)
+- Project already cloned to `/opt/se-toolkit-hackathon` (or set `PROJECT_ROOT`)
 
 ## Quick start (IP-based)
 ```bash
-cd /opt/viberrands
+cd /opt/se-toolkit-hackathon
 sudo chmod +x deploy/vm/deploy_auth.sh
 sudo DOMAIN=10.93.26.73 \
   PUBLIC_ORIGIN=http://10.93.26.73 \
@@ -30,8 +30,8 @@ sudo DOMAIN=10.93.26.73 \
 After deploy:
 - Frontend: `http://10.93.26.73`
 - Backend health: `http://10.93.26.73/health`
-- Auth API: `http://10.93.26.73/auth/...`
-- Tasks API: `http://10.93.26.73/tasks/...`
+- Auth API: `http://10.93.26.73/api/auth/...`
+- Tasks API: `http://10.93.26.73/api/tasks/...`
 
 ## With TLS (domain-based)
 ```bash
@@ -46,12 +46,12 @@ sudo ENABLE_TLS=true \
 ```
 
 ## Important variables
-- `PROJECT_ROOT` default: `/opt/viberrands`
+- `PROJECT_ROOT` default: `/opt/se-toolkit-hackathon`
 - `BACKEND_DIR` default: `$PROJECT_ROOT/backend`
 - `FRONTEND_DIR` default: `$PROJECT_ROOT/frontend`
 - `DOMAIN` default: `10.93.26.73`
 - `PUBLIC_ORIGIN` default: `http://$DOMAIN`
-- `API_BASE_URL` default: `$PUBLIC_ORIGIN`
+- `API_BASE_URL` default: `$PUBLIC_ORIGIN/api`
 - `CORS_ORIGINS` default: `$PUBLIC_ORIGIN`
 - `DB_NAME` default: `viberrands`
 - `TASKS_DB_NAME` default: `${DB_NAME}_tasks`

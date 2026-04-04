@@ -6,9 +6,9 @@ Requires=docker.service
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/opt/viberrands/backend
-Environment=PATH=/opt/viberrands/backend/.venv/bin
-ExecStart=/opt/viberrands/backend/.venv/bin/gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 127.0.0.1:8000 --workers 2
+WorkingDirectory=/opt/se-toolkit-hackathon/backend
+Environment=PATH=/opt/se-toolkit-hackathon/backend/.venv/bin
+ExecStart=/opt/se-toolkit-hackathon/backend/.venv/bin/gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 127.0.0.1:8000 --workers 2
 Restart=always
 RestartSec=5
 

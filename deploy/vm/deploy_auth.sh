@@ -43,7 +43,7 @@ if [[ ! -f "${FRONTEND_DIR}/package.json" ]]; then
 fi
 
 if [[ -z "${API_BASE_URL}" ]]; then
-  API_BASE_URL="${PUBLIC_ORIGIN}"
+  API_BASE_URL="${PUBLIC_ORIGIN}/api"
 fi
 
 echo "[1/10] Installing OS dependencies"
@@ -99,7 +99,7 @@ EOF
 echo "[5/10] Installing systemd service"
 cat > /etc/systemd/system/viberrands-auth.service <<EOF
 [Unit]
-Description=VibErrands Auth API
+Description=VibErrands API
 After=network.target docker.service
 Requires=docker.service
 
@@ -144,16 +144,8 @@ server {
   root /var/www/viberrands;
   index index.html;
 
-  location /auth/ {
-    proxy_pass http://127.0.0.1:8000;
-    proxy_http_version 1.1;
-    proxy_set_header Host \$host;
-    proxy_set_header X-Real-IP \$remote_addr;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto \$scheme;
-  }
-
-  location /tasks {
+  location /api/ {
+    rewrite ^/api/(.*)$ /$1 break;
     proxy_pass http://127.0.0.1:8000;
     proxy_http_version 1.1;
     proxy_set_header Host \$host;
