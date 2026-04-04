@@ -5,6 +5,18 @@ function apiUrl(path) {
   return `${API_BASE_URL}${path}`;
 }
 
+async function parseError(response, fallbackMessage) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    const payload = await response.json();
+    return payload.detail || fallbackMessage;
+  }
+
+  const text = await response.text();
+  return text || fallbackMessage;
+}
+
 export function getToken() {
   return localStorage.getItem(TOKEN_STORAGE_KEY);
 }
@@ -25,8 +37,8 @@ export async function register(payload) {
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || "Registration failed");
+    const message = await parseError(response, "Registration failed");
+    throw new Error(message);
   }
 
   return response.json();
@@ -44,8 +56,8 @@ export async function login(telegramUsername, password) {
   });
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.detail || "Login failed");
+    const message = await parseError(response, "Login failed");
+    throw new Error(message);
   }
 
   return response.json();
