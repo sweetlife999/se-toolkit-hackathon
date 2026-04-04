@@ -9,7 +9,7 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
-PROJECT_ROOT="${PROJECT_ROOT:-/opt/viberrands}"
+PROJECT_ROOT="${PROJECT_ROOT:-/opt/se-toolkit-hackathon}"
 BACKEND_DIR="${BACKEND_DIR:-${PROJECT_ROOT}/backend}"
 FRONTEND_DIR="${FRONTEND_DIR:-${PROJECT_ROOT}/frontend}"
 DOMAIN="${DOMAIN:-10.93.26.73}"
