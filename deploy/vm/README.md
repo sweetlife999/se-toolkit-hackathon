@@ -1,9 +1,12 @@
-# VM deployment for auth service
+# VM deployment for full stack
 
-This folder contains a one-shot script and templates to deploy the current auth-only VibErrands backend on an Ubuntu VM.
+This folder contains a one-shot script and templates to deploy the current VibErrands stack on an Ubuntu VM:
+- PostgreSQL (Docker)
+- FastAPI backend (systemd + Gunicorn)
+- React frontend (built and served by Nginx)
 
 ## Files
-- `deploy_auth.sh`: installs dependencies, starts PostgreSQL container, configures backend env, configures systemd and Nginx.
+- `deploy_auth.sh`: installs dependencies, starts PostgreSQL container, builds frontend, configures backend env, configures systemd and Nginx.
 - `viberrands-auth.service.template`: reference systemd unit.
 - `nginx.viberrands-auth.conf.template`: reference Nginx server block.
 
@@ -12,23 +15,30 @@ This folder contains a one-shot script and templates to deploy the current auth-
 - Domain DNS A-record pointing to VM IP (for production)
 - Project already cloned to `/opt/viberrands` (or set `PROJECT_ROOT`)
 
-## Quick start
+## Quick start (IP-based)
 ```bash
 cd /opt/viberrands
 sudo chmod +x deploy/vm/deploy_auth.sh
-sudo DOMAIN=api.your-domain.com \
-  CORS_ORIGINS=https://app.your-domain.com \
+sudo DOMAIN=10.93.26.73 \
+  PUBLIC_ORIGIN=http://10.93.26.73 \
+  CORS_ORIGINS=http://10.93.26.73 \
   JWT_SECRET_KEY='replace-with-strong-random-secret' \
   DB_PASSWORD='replace-db-password' \
   bash deploy/vm/deploy_auth.sh
 ```
 
-## With TLS
+After deploy:
+- Frontend: `http://10.93.26.73`
+- Backend health: `http://10.93.26.73/health`
+- Auth API: `http://10.93.26.73/auth/...`
+
+## With TLS (domain-based)
 ```bash
 sudo ENABLE_TLS=true \
   LETSENCRYPT_EMAIL=you@example.com \
   DOMAIN=api.your-domain.com \
-  CORS_ORIGINS=https://app.your-domain.com \
+  PUBLIC_ORIGIN=https://api.your-domain.com \
+  CORS_ORIGINS=https://api.your-domain.com \
   JWT_SECRET_KEY='replace-with-strong-random-secret' \
   DB_PASSWORD='replace-db-password' \
   bash deploy/vm/deploy_auth.sh
@@ -37,8 +47,11 @@ sudo ENABLE_TLS=true \
 ## Important variables
 - `PROJECT_ROOT` default: `/opt/viberrands`
 - `BACKEND_DIR` default: `$PROJECT_ROOT/backend`
-- `DOMAIN` default: `api.example.com`
-- `CORS_ORIGINS` default: `https://app.example.com`
+- `FRONTEND_DIR` default: `$PROJECT_ROOT/frontend`
+- `DOMAIN` default: `10.93.26.73`
+- `PUBLIC_ORIGIN` default: `http://$DOMAIN`
+- `API_BASE_URL` default: `$PUBLIC_ORIGIN`
+- `CORS_ORIGINS` default: `$PUBLIC_ORIGIN`
 - `DB_NAME` default: `viberrands`
 - `DB_USER` default: `postgres`
 - `DB_PASSWORD` default: `postgres`
@@ -50,7 +63,7 @@ sudo ENABLE_TLS=true \
 
 ## Verify
 ```bash
-curl http://api.your-domain.com/health
+curl http://10.93.26.73/health
 sudo systemctl status viberrands-auth --no-pager
 sudo docker compose ps
 ```
