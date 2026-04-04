@@ -15,14 +15,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(payload: UserRegister, db: Session = Depends(get_db)) -> User:
-    user = User(
-        telegram_username=payload.telegram_username,
-        hashed_password=get_password_hash(payload.password),
-    )
-
-    db.add(user)
-
     try:
+        user = User(
+            telegram_username=payload.telegram_username,
+            hashed_password=get_password_hash(payload.password),
+        )
+
+        db.add(user)
         db.commit()
     except IntegrityError as exc:
         db.rollback()
@@ -31,7 +30,6 @@ def register(payload: UserRegister, db: Session = Depends(get_db)) -> User:
         db.rollback()
         raise HTTPException(status_code=500, detail="Could not create user") from exc
 
-    db.refresh(user)
     return user
 
 
