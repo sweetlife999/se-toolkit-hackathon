@@ -2,6 +2,9 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
+import TaskCreatePage from "./pages/TaskCreatePage";
+import TaskDetailsPage from "./pages/TaskDetailsPage";
+import TaskFeedPage from "./pages/TaskFeedPage";
 import { getToken } from "./api/auth";
 
 function ProtectedRoute({ children }) {
@@ -21,7 +24,31 @@ export default function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/profile" replace />} />
+      <Route
+        path="/tasks"
+        element={
+          <ProtectedRoute>
+            <TaskFeedPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tasks/new"
+        element={
+          <ProtectedRoute>
+            <TaskCreatePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tasks/:taskId"
+        element={
+          <ProtectedRoute>
+            <TaskDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/tasks" replace />} />
     </Routes>
   );
 }

@@ -1,6 +1,6 @@
 # VibErrands
 
-Auth-first release baseline for VibErrands.
+Auth-first release baseline for VibErrands, now extended with the first task lifecycle.
 
 ## Stack
 - Backend: FastAPI + Python + SQLAlchemy
@@ -12,7 +12,7 @@ Auth-first release baseline for VibErrands.
 - Login with JWT access token
 - Protected endpoint: get current user profile
 - Frontend pages: register, login, profile, logout
-- PostgreSQL setup with `users` table
+- PostgreSQL setup with `users` table and a separate tasks database
 
 ## Project structure
 - `backend/` FastAPI service
@@ -55,8 +55,18 @@ Frontend runs at `http://localhost:5173` and expects backend at `http://localhos
 
 - `POST /auth/login` as form data (`username`, `password`)
 - `GET /auth/me` with `Authorization: Bearer <token>`
+- `GET /tasks` with `Authorization: Bearer <token>`
+- `POST /tasks` with `Authorization: Bearer <token>`
+- `POST /tasks/{task_id}/take` with `Authorization: Bearer <token>`
+- `POST /tasks/{task_id}/complete` with `Authorization: Bearer <token>`
 
-## Next phase (not implemented in this step)
-- Task CRUD and statuses (`open`, `in_work`, `done`)
-- LLM-based suggested tags flow before task creation
-- Accept task / mark in work / creator marks done
+## Current task flow
+- Create task with description, price, estimated minutes, mode, and tags
+- Browse open tasks with filters by mode and tag
+- Take a task into work
+- Creator marks the task as done
+
+## Environment
+- `DATABASE_URL` points to the auth database
+- `TASKS_DATABASE_URL` points to the tasks database
+- `VITE_API_BASE_URL` controls frontend API calls

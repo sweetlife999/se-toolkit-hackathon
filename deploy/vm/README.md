@@ -31,6 +31,7 @@ After deploy:
 - Frontend: `http://10.93.26.73`
 - Backend health: `http://10.93.26.73/health`
 - Auth API: `http://10.93.26.73/auth/...`
+- Tasks API: `http://10.93.26.73/tasks/...`
 
 ## With TLS (domain-based)
 ```bash
@@ -53,6 +54,7 @@ sudo ENABLE_TLS=true \
 - `API_BASE_URL` default: `$PUBLIC_ORIGIN`
 - `CORS_ORIGINS` default: `$PUBLIC_ORIGIN`
 - `DB_NAME` default: `viberrands`
+- `TASKS_DB_NAME` default: `${DB_NAME}_tasks`
 - `DB_USER` default: `postgres`
 - `DB_PASSWORD` default: `postgres`
 - `JWT_SECRET_KEY` default: `change-me-in-env`

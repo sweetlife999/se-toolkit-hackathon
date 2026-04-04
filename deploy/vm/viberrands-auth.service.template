@@ -1,5 +1,5 @@
 [Unit]
-Description=VibErrands Auth API
+Description=VibErrands API
 After=network.target docker.service
 Requires=docker.service
 

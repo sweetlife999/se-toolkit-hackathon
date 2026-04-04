@@ -17,6 +17,7 @@ PUBLIC_ORIGIN="${PUBLIC_ORIGIN:-http://${DOMAIN}}"
 API_BASE_URL="${API_BASE_URL:-}"
 CORS_ORIGINS="${CORS_ORIGINS:-${PUBLIC_ORIGIN}}"
 DB_NAME="${DB_NAME:-viberrands}"
+TASKS_DB_NAME="${TASKS_DB_NAME:-${DB_NAME}_tasks}"
 DB_USER="${DB_USER:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-postgres}"
 JWT_SECRET_KEY="${JWT_SECRET_KEY:-change-me-in-env}"
@@ -72,6 +73,11 @@ if ! docker compose exec -T db pg_isready -U "${DB_USER}" -d "${DB_NAME}" >/dev/
   exit 1
 fi
 
+if ! docker compose exec -T db psql -U "${DB_USER}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${TASKS_DB_NAME}'" | grep -q 1; then
+  echo "Creating tasks database: ${TASKS_DB_NAME}"
+  docker compose exec -T db psql -U "${DB_USER}" -d postgres -c "CREATE DATABASE \"${TASKS_DB_NAME}\""
+fi
+
 echo "[3/10] Preparing backend virtual environment"
 cd "${BACKEND_DIR}"
 python3 -m venv .venv
@@ -83,6 +89,7 @@ pip install gunicorn
 echo "[4/10] Writing production backend environment file"
 cat > "${BACKEND_DIR}/.env" <<EOF
 DATABASE_URL=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
+TASKS_DATABASE_URL=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@localhost:5432/${TASKS_DB_NAME}
 JWT_SECRET_KEY=${JWT_SECRET_KEY}
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
@@ -138,6 +145,15 @@ server {
   index index.html;
 
   location /auth/ {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_http_version 1.1;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+  }
+
+  location /tasks {
     proxy_pass http://127.0.0.1:8000;
     proxy_http_version 1.1;
     proxy_set_header Host \$host;
