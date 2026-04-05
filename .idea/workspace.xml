@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: display a useful msg when failing to create a task" />
+    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="feat: display errors for reg/login">
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/GivenTasksPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/app/api/routes/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/routes/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/tasks.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/tasks.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TakenTasksPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TakenTasksPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TaskCreatePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TaskCreatePage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TaskDetailsPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TaskDetailsPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TaskFeedPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TaskFeedPage.jsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -87,7 +97,7 @@
       <workItem from="1775305732033" duration="1000" />
       <workItem from="1775306074760" duration="87000" />
       <workItem from="1775336255126" duration="6831000" />
-      <workItem from="1775350440846" duration="3979000" />
+      <workItem from="1775350440846" duration="5257000" />
     </task>
     <task id="LOCAL-00001" summary="feat: experimental tasks">
       <option name="closed" value="true" />
@@ -145,7 +155,23 @@
       <option name="project" value="LOCAL" />
       <updated>1775389881419</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="fix: from prev commit, display mor user-friendly msg">
+      <option name="closed" value="true" />
+      <created>1775390231632</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1775390231632</updated>
+    </task>
+    <task id="LOCAL-00009" summary="feat: display errors for reg/login">
+      <option name="closed" value="true" />
+      <created>1775390389940</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1775390389940</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -169,7 +195,9 @@
     <MESSAGE value="fix: change task giver info" />
     <MESSAGE value="feat: 2 sep pages for tasks" />
     <MESSAGE value="fix: display a useful msg when failing to create a task" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: display a useful msg when failing to create a task" />
+    <MESSAGE value="fix: from prev commit, display mor user-friendly msg" />
+    <MESSAGE value="feat: display errors for reg/login" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: display errors for reg/login" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

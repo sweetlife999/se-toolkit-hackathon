@@ -118,7 +118,8 @@ export default function TaskDetailsPage() {
         <nav className="topbar-nav">
           <Link to="/tasks">Feed</Link>
           <Link to="/tasks/new">Create task</Link>
-          <Link to="/tasks/taken">My tasks</Link>
+          <Link to="/tasks/taken">Taken tasks</Link>
+          <Link to="/tasks/given">Given tasks</Link>
           <Link to="/profile">Profile</Link>
         </nav>
       </header>
@@ -158,7 +159,10 @@ export default function TaskDetailsPage() {
             Back to feed
           </Link>
           <Link className="secondary-link" to="/tasks/taken">
-            Back to my tasks
+            Back to taken tasks
+          </Link>
+          <Link className="secondary-link" to="/tasks/given">
+            Back to given tasks
           </Link>
           {isCreator && task.status === "open" && <span className="muted">You created this task.</span>}
         </div>

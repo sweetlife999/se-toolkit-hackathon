@@ -151,6 +151,10 @@ export async function getTakenTasks() {
   return request("/tasks/taken");
 }
 
+export async function getGivenTasks() {
+  return request("/tasks/given");
+}
+
 export async function createTask(payload) {
   return request("/tasks", {
     method: "POST",

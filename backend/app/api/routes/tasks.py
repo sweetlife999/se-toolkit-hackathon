@@ -136,6 +136,17 @@ def list_taken_tasks(
     return [_serialize_task(task, creator_telegram_username=username_map.get(task.creator_id)) for task in tasks]
 
 
+@router.get("/given", response_model=List[TaskOut])
+def list_given_tasks(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_tasks_db),
+    auth_db: Session = Depends(get_db),
+) -> List[TaskOut]:
+    tasks = _task_query(db).filter(Task.creator_id == current_user.id).order_by(Task.updated_at.desc()).all()
+    username_map = _creator_username_map(auth_db, (task.creator_id for task in tasks))
+    return [_serialize_task(task, creator_telegram_username=username_map.get(task.creator_id)) for task in tasks]
+
+
 @router.get("/{task_id}", response_model=TaskOut)
 def get_task(
     task_id: int,

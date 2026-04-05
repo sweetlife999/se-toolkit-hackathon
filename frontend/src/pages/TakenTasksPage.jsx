@@ -79,11 +79,12 @@ export default function TakenTasksPage() {
       <header className="topbar">
         <div>
           <p className="eyebrow">Tasks</p>
-          <h1>My taken tasks</h1>
+          <h1>Taken tasks</h1>
         </div>
         <nav className="topbar-nav">
           <Link to="/tasks">Open feed</Link>
           <Link to="/tasks/new">Create task</Link>
+          <Link to="/tasks/given">Given tasks</Link>
           <Link to="/profile">Profile</Link>
         </nav>
       </header>

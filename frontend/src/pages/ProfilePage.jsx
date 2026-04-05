@@ -57,6 +57,8 @@ export default function ProfilePage() {
         <nav className="topbar-nav">
           <Link to="/tasks">Feed</Link>
           <Link to="/tasks/new">Create task</Link>
+          <Link to="/tasks/taken">Taken tasks</Link>
+          <Link to="/tasks/given">Given tasks</Link>
         </nav>
       </header>
 
@@ -69,7 +71,10 @@ export default function ProfilePage() {
             Go to tasks
           </Link>
           <Link className="secondary-link" to="/tasks/taken">
-            My taken tasks
+            Taken tasks
+          </Link>
+          <Link className="secondary-link" to="/tasks/given">
+            Given tasks
           </Link>
           {telegramProfileUrl && (
             <a className="secondary-link" href={telegramProfileUrl} target="_blank" rel="noreferrer">

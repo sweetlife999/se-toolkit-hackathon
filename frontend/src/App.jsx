@@ -6,6 +6,7 @@ import TaskCreatePage from "./pages/TaskCreatePage";
 import TaskDetailsPage from "./pages/TaskDetailsPage";
 import TaskFeedPage from "./pages/TaskFeedPage";
 import TakenTasksPage from "./pages/TakenTasksPage";
+import GivenTasksPage from "./pages/GivenTasksPage";
 import { getToken } from "./api/auth";
 
 function ProtectedRoute({ children }) {
@@ -46,6 +47,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <TakenTasksPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tasks/given"
+        element={
+          <ProtectedRoute>
+            <GivenTasksPage />
           </ProtectedRoute>
         }
       />

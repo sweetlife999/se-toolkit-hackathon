@@ -79,7 +79,8 @@ export default function TaskCreatePage() {
         </div>
         <nav className="topbar-nav">
           <Link to="/tasks">Feed</Link>
-          <Link to="/tasks/taken">My tasks</Link>
+          <Link to="/tasks/taken">Taken tasks</Link>
+          <Link to="/tasks/given">Given tasks</Link>
           <Link to="/profile">Profile</Link>
         </nav>
       </header>
