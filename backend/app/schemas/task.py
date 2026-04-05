@@ -31,6 +31,7 @@ class TaskUpdateTags(BaseModel):
 class TaskOut(BaseModel):
     id: int
     creator_id: int
+    creator_telegram_username: Optional[str] = None
     title: Optional[str]
     description: str
     price: float

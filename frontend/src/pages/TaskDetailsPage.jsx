@@ -106,6 +106,7 @@ export default function TaskDetailsPage() {
   const isCreator = currentUser?.id === task?.creator_id;
   const canTake = task?.status === "open" && !isCreator;
   const canComplete = task?.status === "in_work" && isCreator;
+  const creatorLabel = task?.creator_telegram_username || `#${task?.creator_id}`;
 
   return (
     <div className="page-shell">
@@ -130,7 +131,7 @@ export default function TaskDetailsPage() {
           <div className="task-meta">
             <span>Price: {Number(task.price).toFixed(2)}</span>
             <span>Estimated: {task.estimated_minutes} min</span>
-            <span>Creator: #{task.creator_id}</span>
+            <span>Creator: {creatorLabel}</span>
             {task.assignee_id ? <span>Assignee: #{task.assignee_id}</span> : <span>Assignee: none</span>}
           </div>
         </div>

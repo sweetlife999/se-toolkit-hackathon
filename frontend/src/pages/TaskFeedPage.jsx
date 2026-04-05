@@ -4,6 +4,7 @@ import { getTasks, takeTask } from "../api/tasks";
 
 function TaskCard({ task, onTake, takingId }) {
   const isTaking = takingId === task.id;
+  const creatorLabel = task.creator_telegram_username || `#${task.creator_id}`;
 
   return (
     <article className="task-card">
@@ -22,7 +23,7 @@ function TaskCard({ task, onTake, takingId }) {
       <div className="task-meta">
         <span>Price: {Number(task.price).toFixed(2)}</span>
         <span>Time: {task.estimated_minutes} min</span>
-        <span>Creator: #{task.creator_id}</span>
+        <span>Creator: {creatorLabel}</span>
       </div>
 
       <div className="chip-list">
