@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getTakenTasks } from "../api/tasks";
+import { useTasksChangedRefresh } from "../hooks/useTasksChangedRefresh";
 
 function TakenTaskCard({ task }) {
   const creatorLabel = task.creator_telegram_username || `#${task.creator_id}`;
@@ -48,33 +49,40 @@ export default function TakenTasksPage() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const mountedRef = useRef(false);
 
   useEffect(() => {
-    let mounted = true;
-
-    setError("");
-    setLoading(true);
-    getTakenTasks()
-      .then((data) => {
-        if (mounted) {
-          setTasks(data);
-        }
-      })
-      .catch((err) => {
-        if (mounted) {
-          setError(err.message);
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setLoading(false);
-        }
-      });
+    mountedRef.current = true;
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
     };
   }, []);
+
+  const loadTasks = useCallback(async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const data = await getTakenTasks();
+      if (mountedRef.current) {
+        setTasks(data);
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        setError(err.message);
+      }
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
+  useTasksChangedRefresh(loadTasks);
 
   return (
     <div className="page-shell">

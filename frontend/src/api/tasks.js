@@ -113,6 +113,12 @@ function authHeaders() {
   };
 }
 
+function notifyTasksChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("tasks:changed"));
+  }
+}
+
 async function request(path, options = {}) {
   const response = await fetch(apiUrl(path), {
     ...options,
@@ -168,30 +174,42 @@ export async function getTaskHistory(limit = 100, category = "all") {
 }
 
 export async function createTask(payload) {
-  return request("/tasks", {
+  const result = await request("/tasks", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
   });
+
+  notifyTasksChanged();
+  return result;
 }
 
 export async function takeTask(taskId) {
-  return request(`/tasks/${taskId}/take`, {
+  const result = await request(`/tasks/${taskId}/take`, {
     method: "POST",
   });
+
+  notifyTasksChanged();
+  return result;
 }
 
 export async function completeTask(taskId) {
-  return request(`/tasks/${taskId}/complete`, {
+  const result = await request(`/tasks/${taskId}/complete`, {
     method: "POST",
   });
+
+  notifyTasksChanged();
+  return result;
 }
 
 export async function cancelTask(taskId) {
-  return request(`/tasks/${taskId}/cancel`, {
+  const result = await request(`/tasks/${taskId}/cancel`, {
     method: "POST",
   });
+
+  notifyTasksChanged();
+  return result;
 }
 

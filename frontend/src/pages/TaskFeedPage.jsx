@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getTasks, takeTask } from "../api/tasks";
 
@@ -55,34 +55,61 @@ export default function TaskFeedPage() {
   const [tasks, setTasks] = useState([]);
   const [mode, setMode] = useState("");
   const [tag, setTag] = useState("");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [takingId, setTakingId] = useState(null);
 
-  useEffect(() => {
-    let mounted = true;
-
+  const loadTasks = async (mountedRef) => {
     setError("");
     setLoading(true);
-    getTasks({ mode: mode || undefined, tag: tag || undefined })
-      .then((data) => {
-        if (mounted) {
-          setTasks(data);
-        }
-      })
-      .catch((err) => {
-        if (mounted) {
-          setError(err.message);
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setLoading(false);
-        }
-      });
+    try {
+      const data = await getTasks({ mode: mode || undefined, tag: tag || undefined });
+      if (mountedRef.current) {
+        setTasks(data);
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        setError(err.message);
+      }
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const filteredTasks = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) {
+      return tasks;
+    }
+
+    return tasks.filter((task) => {
+      const creator = (task.creator_telegram_username || "").toLowerCase();
+      const title = (task.title || "").toLowerCase();
+      const description = (task.description || "").toLowerCase();
+      const tagMatch = task.tags.some((taskTag) => taskTag.name.toLowerCase().includes(query));
+      return creator.includes(query) || title.includes(query) || description.includes(query) || tagMatch;
+    });
+  }, [tasks, search]);
+
+  useEffect(() => {
+    const mountedRef = { current: true };
+
+    loadTasks(mountedRef);
+
+    const onTasksChanged = () => {
+      if (mountedRef.current) {
+        loadTasks(mountedRef);
+      }
+    };
+
+    window.addEventListener("tasks:changed", onTasksChanged);
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
+      window.removeEventListener("tasks:changed", onTasksChanged);
     };
   }, [mode, tag]);
 
@@ -129,6 +156,15 @@ export default function TaskFeedPage() {
           Tag
           <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Search by tag" />
         </label>
+
+        <label>
+          Search
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by title, description, creator or tag"
+          />
+        </label>
       </section>
 
       {loading ? (
@@ -137,13 +173,13 @@ export default function TaskFeedPage() {
         <div className="panel">
           <p className="error">{error}</p>
         </div>
-      ) : tasks.length === 0 ? (
+      ) : filteredTasks.length === 0 ? (
         <div className="panel">
-          <p className="muted">No open tasks match the current filters.</p>
+          <p className="muted">No open tasks match the current filters/search.</p>
         </div>
       ) : (
         <div className="task-grid">
-          {tasks.map((task) => (
+          {filteredTasks.map((task) => (
             <TaskCard key={task.id} task={task} onTake={handleTake} takingId={takingId} />
           ))}
         </div>

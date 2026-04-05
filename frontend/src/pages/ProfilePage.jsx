@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { clearToken, fetchMe, getUserHistory } from "../api/auth";
 import {
@@ -9,9 +9,11 @@ import {
   verifyAdmin,
 } from "../api/admin";
 import { getTaskHistory } from "../api/tasks";
+import { useTasksChangedRefresh } from "../hooks/useTasksChangedRefresh";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const mountedRef = useRef(false);
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyError, setHistoryError] = useState("");
@@ -22,6 +24,7 @@ export default function ProfilePage() {
   const [adminPassword, setAdminPassword] = useState("");
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [adminError, setAdminError] = useState("");
+  const [adminValidationIssues, setAdminValidationIssues] = useState([]);
   const [adminNotice, setAdminNotice] = useState("");
   const [adminLoading, setAdminLoading] = useState(false);
   const [removeTaskId, setRemoveTaskId] = useState("");
@@ -34,7 +37,15 @@ export default function ProfilePage() {
   const [decComment, setDecComment] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const loadUserAndHistory = async (category) => {
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const loadUserAndHistory = useCallback(async (category) => {
     const taskHistoryPromise = category === "admin" ? Promise.resolve([]) : getTaskHistory(120, category);
     const [profile, taskActivity, adminActivity] = await Promise.all([fetchMe(), taskHistoryPromise, getUserHistory(120)]);
 
@@ -56,41 +67,43 @@ export default function ProfilePage() {
     ).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     return { profile, merged };
-  };
+  }, []);
 
-  useEffect(() => {
-    let mounted = true;
+  const refreshProfile = useCallback(async () => {
     setHistoryError("");
     setHistoryLoading(true);
 
-    loadUserAndHistory(historyCategory)
-      .then(({ profile, merged }) => {
-        if (mounted) {
-          setUser(profile);
-          setHistory(merged);
-        }
-      })
-      .catch((err) => {
-        if (err?.message === "Unauthorized" || String(err?.message || "").toLowerCase().includes("credentials")) {
+    try {
+      const { profile, merged } = await loadUserAndHistory(historyCategory);
+      if (mountedRef.current) {
+        setUser(profile);
+        setHistory(merged);
+      }
+    } catch (err) {
+      if (err?.message === "Unauthorized" || String(err?.message || "").toLowerCase().includes("credentials")) {
+        if (mountedRef.current) {
           clearToken();
           navigate("/login", { replace: true });
-          return;
         }
-        if (mounted) {
-          setHistoryError(err?.message || "Could not load profile");
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setLoading(false);
-          setHistoryLoading(false);
-        }
-      });
+        return;
+      }
 
-    return () => {
-      mounted = false;
-    };
-  }, [navigate, historyCategory]);
+      if (mountedRef.current) {
+        setHistoryError(err?.message || "Could not load profile");
+      }
+    } finally {
+      if (mountedRef.current) {
+        setLoading(false);
+        setHistoryLoading(false);
+      }
+    }
+  }, [historyCategory, loadUserAndHistory, navigate]);
+
+  useEffect(() => {
+    refreshProfile();
+  }, [refreshProfile]);
+
+  useTasksChangedRefresh(refreshProfile);
 
   const onLogout = () => {
     clearToken();
@@ -107,13 +120,12 @@ export default function ProfilePage() {
   });
 
   const refreshAfterAdminAction = async () => {
-    const { profile, merged } = await loadUserAndHistory(historyCategory);
-    setUser(profile);
-    setHistory(merged);
+    await refreshProfile();
   };
 
   const runAdminAction = async (action, successMessage) => {
     setAdminError("");
+    setAdminValidationIssues([]);
     setAdminNotice("");
     setAdminLoading(true);
     try {
@@ -121,7 +133,12 @@ export default function ProfilePage() {
       await refreshAfterAdminAction();
       setAdminNotice(successMessage);
     } catch (err) {
-      setAdminError(err.message || "Admin action failed");
+      if (Array.isArray(err.issues) && err.issues.length > 0) {
+        setAdminValidationIssues(err.issues);
+        setAdminError("Please fix the fields below.");
+      } else {
+        setAdminError(err.message || "Admin action failed");
+      }
     } finally {
       setAdminLoading(false);
     }
@@ -321,6 +338,13 @@ export default function ProfilePage() {
           </form>
 
           {adminError && <p className="error">{adminError}</p>}
+          {adminValidationIssues.length > 0 && (
+            <ul className="error-list">
+              {adminValidationIssues.map((issue, index) => (
+                <li key={`${issue}-${index}`}>{issue}</li>
+              ))}
+            </ul>
+          )}
           {adminNotice && <p className="admin-notice">{adminNotice}</p>}
 
           {adminUnlocked && (

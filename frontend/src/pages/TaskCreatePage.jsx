@@ -122,7 +122,6 @@ export default function TaskCreatePage() {
               inputMode="numeric"
               required
             />
-            <small>Suggested starting reward: 100.</small>
           </label>
 
           <label>
