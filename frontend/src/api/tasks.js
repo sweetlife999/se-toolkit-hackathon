@@ -61,6 +61,10 @@ export async function getTask(taskId) {
   return request(`/tasks/${taskId}`);
 }
 
+export async function getTakenTasks() {
+  return request("/tasks/taken");
+}
+
 export async function createTask(payload) {
   return request("/tasks", {
     method: "POST",

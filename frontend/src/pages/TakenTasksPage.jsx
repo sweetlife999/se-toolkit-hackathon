@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { getTasks, takeTask } from "../api/tasks";
+import { Link } from "react-router-dom";
+import { getTakenTasks } from "../api/tasks";
 
-function TaskCard({ task, onTake, takingId }) {
-  const isTaking = takingId === task.id;
+function TakenTaskCard({ task }) {
   const creatorLabel = task.creator_telegram_username || `#${task.creator_id}`;
 
   return (
@@ -38,31 +37,22 @@ function TaskCard({ task, onTake, takingId }) {
         <Link className="secondary-link" to={`/tasks/${task.id}`}>
           Details
         </Link>
-        {task.status === "open" && (
-          <button type="button" onClick={() => onTake(task.id)} disabled={isTaking}>
-            {isTaking ? "Taking..." : "Take task"}
-          </button>
-        )}
       </div>
     </article>
   );
 }
 
-export default function TaskFeedPage() {
-  const navigate = useNavigate();
+export default function TakenTasksPage() {
   const [tasks, setTasks] = useState([]);
-  const [mode, setMode] = useState("");
-  const [tag, setTag] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [takingId, setTakingId] = useState(null);
 
   useEffect(() => {
     let mounted = true;
 
     setError("");
     setLoading(true);
-    getTasks({ mode: mode || undefined, tag: tag || undefined })
+    getTakenTasks()
       .then((data) => {
         if (mounted) {
           setTasks(data);
@@ -82,66 +72,36 @@ export default function TaskFeedPage() {
     return () => {
       mounted = false;
     };
-  }, [mode, tag]);
-
-  const handleTake = async (taskId) => {
-    setError("");
-    setTakingId(taskId);
-
-    try {
-      await takeTask(taskId);
-      navigate("/tasks/taken");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setTakingId(null);
-    }
-  };
+  }, []);
 
   return (
     <div className="page-shell">
       <header className="topbar">
         <div>
           <p className="eyebrow">Tasks</p>
-          <h1>Open task feed</h1>
+          <h1>My taken tasks</h1>
         </div>
         <nav className="topbar-nav">
+          <Link to="/tasks">Open feed</Link>
           <Link to="/tasks/new">Create task</Link>
-          <Link to="/tasks/taken">My tasks</Link>
           <Link to="/profile">Profile</Link>
         </nav>
       </header>
 
-      <section className="panel filters">
-        <label>
-          Mode
-          <select value={mode} onChange={(e) => setMode(e.target.value)}>
-            <option value="">All</option>
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-          </select>
-        </label>
-
-        <label>
-          Tag
-          <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Search by tag" />
-        </label>
-      </section>
-
       {loading ? (
-        <div className="panel">Loading tasks...</div>
+        <div className="panel">Loading your taken tasks...</div>
       ) : error ? (
         <div className="panel">
           <p className="error">{error}</p>
         </div>
       ) : tasks.length === 0 ? (
         <div className="panel">
-          <p className="muted">No open tasks match the current filters.</p>
+          <p className="muted">You have not taken any tasks yet.</p>
         </div>
       ) : (
         <div className="task-grid">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onTake={handleTake} takingId={takingId} />
+            <TakenTaskCard key={task.id} task={task} />
           ))}
         </div>
       )}
