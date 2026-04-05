@@ -7,7 +7,12 @@ from app.api.routes.tasks import router as tasks_router
 from app.core.config import settings
 from app.models.user import Base
 from app.db.session import engine
-from app.db.migrations import ensure_task_reward_column, ensure_task_status_cancelled, ensure_user_balance_column
+from app.db.migrations import (
+    ensure_task_difficulty_column,
+    ensure_task_reward_column,
+    ensure_task_status_cancelled,
+    ensure_user_balance_column,
+)
 from app.models.task import TaskBase
 from app.db.tasks_session import tasks_engine
 
@@ -29,6 +34,7 @@ def on_startup() -> None:
     TaskBase.metadata.create_all(bind=tasks_engine)
     ensure_user_balance_column(engine)
     ensure_task_reward_column(tasks_engine)
+    ensure_task_difficulty_column(tasks_engine)
     ensure_task_status_cancelled(tasks_engine)
 
 

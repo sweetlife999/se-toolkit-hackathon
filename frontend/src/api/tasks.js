@@ -14,6 +14,7 @@ async function parseError(response, fallbackMessage) {
       title: "Title",
       description: "Description",
       reward: "Reward",
+      difficulty: "Difficulty",
       estimated_minutes: "Estimated time",
       mode: "Mode",
       tags: "Tags",

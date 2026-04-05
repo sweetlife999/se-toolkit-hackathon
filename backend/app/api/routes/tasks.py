@@ -136,6 +136,7 @@ def create_task(
         title=payload.title.strip() if payload.title else None,
         description=payload.description.strip(),
         reward=payload.reward,
+        difficulty=payload.difficulty,
         estimated_minutes=payload.estimated_minutes,
         mode=payload.mode,
         status=TaskStatus.open,

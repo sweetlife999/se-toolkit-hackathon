@@ -17,6 +17,12 @@ class TaskMode(str, Enum):
     offline = "offline"
 
 
+class TaskDifficulty(str, Enum):
+    easy = "easy"
+    medium = "medium"
+    hard = "hard"
+
+
 class TaskStatus(str, Enum):
     open = "open"
     in_work = "in_work"
@@ -47,6 +53,9 @@ class Task(TaskBase):
     title: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     reward: Mapped[int] = mapped_column(Integer, nullable=False)
+    difficulty: Mapped[TaskDifficulty] = mapped_column(
+        String(16), nullable=False, default=TaskDifficulty.medium, server_default=TaskDifficulty.medium.value, index=True
+    )
     estimated_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     mode: Mapped[TaskMode] = mapped_column(SAEnum(TaskMode, name="task_mode"), nullable=False, index=True)
     status: Mapped[TaskStatus] = mapped_column(

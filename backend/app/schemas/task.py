@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, PositiveInt
 
-from app.models.task import TaskMode, TaskStatus
+from app.models.task import TaskDifficulty, TaskMode, TaskStatus
 
 
 class TaskTagOut(BaseModel):
@@ -19,6 +19,7 @@ class TaskCreate(BaseModel):
     title: Optional[str] = Field(default=None, max_length=120)
     description: str = Field(min_length=5, max_length=10_000)
     reward: PositiveInt
+    difficulty: TaskDifficulty = TaskDifficulty.medium
     estimated_minutes: PositiveInt
     mode: TaskMode
     tags: List[str] = Field(default_factory=list)
@@ -35,6 +36,7 @@ class TaskOut(BaseModel):
     title: Optional[str]
     description: str
     reward: int
+    difficulty: TaskDifficulty
     estimated_minutes: int
     mode: TaskMode
     status: TaskStatus

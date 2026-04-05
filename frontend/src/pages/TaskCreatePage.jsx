@@ -6,6 +6,7 @@ const EMPTY_TASK = {
   title: "",
   description: "",
   reward: "",
+  difficulty: "medium",
   estimatedMinutes: "",
   mode: "online",
 };
@@ -53,6 +54,7 @@ export default function TaskCreatePage() {
         title: form.title.trim() || null,
         description: form.description.trim(),
         reward: Number(form.reward),
+        difficulty: form.difficulty,
         estimated_minutes: Number(form.estimatedMinutes),
         mode: form.mode,
         tags,
@@ -121,6 +123,15 @@ export default function TaskCreatePage() {
               required
             />
             <small>Suggested starting reward: 100.</small>
+          </label>
+
+          <label>
+            Difficulty
+            <select value={form.difficulty} onChange={(e) => setForm({ ...form, difficulty: e.target.value })}>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
           </label>
 
           <label>
