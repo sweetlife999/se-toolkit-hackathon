@@ -1,14 +1,23 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { login, setToken } from "../api/auth";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [telegramUsername, setTelegramUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [validationIssues, setValidationIssues] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.registrationSuccess) {
+      setSuccessMessage("Profile created successfully! Now, login.");
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -55,6 +64,7 @@ export default function LoginPage() {
           required
         />
 
+        {successMessage && <p className="admin-notice">{successMessage}</p>}
         {error && <p className="error">{error}</p>}
         {validationIssues.length > 0 && (
           <ul className="error-list">

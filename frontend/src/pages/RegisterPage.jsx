@@ -18,7 +18,7 @@ export default function RegisterPage() {
 
     try {
       await register({ telegram_username: telegramUsername, password });
-      navigate("/login");
+      navigate("/login", { state: { registrationSuccess: true } });
     } catch (err) {
       if (Array.isArray(err.issues) && err.issues.length > 0) {
         setValidationIssues(err.issues);

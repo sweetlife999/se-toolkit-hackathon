@@ -55,6 +55,7 @@ export default function TaskFeedPage() {
   const [tasks, setTasks] = useState([]);
   const [mode, setMode] = useState("");
   const [tag, setTag] = useState("");
+  const [difficulty, setDifficulty] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -81,18 +82,26 @@ export default function TaskFeedPage() {
 
   const filteredTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) {
-      return tasks;
-    }
-
     return tasks.filter((task) => {
       const creator = (task.creator_telegram_username || "").toLowerCase();
       const title = (task.title || "").toLowerCase();
       const description = (task.description || "").toLowerCase();
       const tagMatch = task.tags.some((taskTag) => taskTag.name.toLowerCase().includes(query));
-      return creator.includes(query) || title.includes(query) || description.includes(query) || tagMatch;
+      const searchMatch =
+        !query || creator.includes(query) || title.includes(query) || description.includes(query) || tagMatch;
+      const taskDifficulty = (task.difficulty || "medium").toLowerCase();
+      const difficultyMatch = !difficulty || taskDifficulty === difficulty;
+
+      return searchMatch && difficultyMatch;
     });
-  }, [tasks, search]);
+  }, [tasks, search, difficulty]);
+
+  const clearFilters = () => {
+    setMode("");
+    setTag("");
+    setDifficulty("");
+    setSearch("");
+  };
 
   useEffect(() => {
     const mountedRef = { current: true };
@@ -158,6 +167,16 @@ export default function TaskFeedPage() {
         </label>
 
         <label>
+          Difficulty
+          <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+            <option value="">All</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+
+        <label>
           Search
           <input
             value={search}
@@ -165,6 +184,12 @@ export default function TaskFeedPage() {
             placeholder="Search by title, description, creator or tag"
           />
         </label>
+
+        <div className="filter-actions">
+          <button type="button" className="secondary-button" onClick={clearFilters}>
+            Clear filters
+          </button>
+        </div>
       </section>
 
       {loading ? (
