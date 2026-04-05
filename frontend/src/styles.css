@@ -325,6 +325,16 @@ h1 {
   margin: 0;
 }
 
+.error-list {
+  margin: -0.35rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--error);
+}
+
+.error-list li {
+  margin: 0.2rem 0;
+}
+
 @media (max-width: 860px) {
   .topbar,
   .task-card-head {

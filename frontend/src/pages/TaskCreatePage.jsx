@@ -23,6 +23,7 @@ export default function TaskCreatePage() {
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
   const [error, setError] = useState("");
+  const [validationIssues, setValidationIssues] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const canAddTag = useMemo(() => tagInput.trim().length > 0, [tagInput]);
@@ -44,6 +45,7 @@ export default function TaskCreatePage() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setValidationIssues([]);
     setLoading(true);
 
     try {
@@ -57,7 +59,12 @@ export default function TaskCreatePage() {
       });
       navigate(`/tasks/${created.id}`);
     } catch (err) {
-      setError(err.message);
+      if (Array.isArray(err.issues) && err.issues.length > 0) {
+        setValidationIssues(err.issues);
+        setError("Please fix the fields below.");
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -171,6 +178,13 @@ export default function TaskCreatePage() {
         </div>
 
         {error && <p className="error">{error}</p>}
+        {validationIssues.length > 0 && (
+          <ul className="error-list">
+            {validationIssues.map((issue) => (
+              <li key={issue}>{issue}</li>
+            ))}
+          </ul>
+        )}
 
         <div className="actions">
           <button type="submit" disabled={loading}>

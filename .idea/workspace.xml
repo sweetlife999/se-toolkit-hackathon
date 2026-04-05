@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: change task giver info" />
+    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: display a useful msg when failing to create a task" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -87,7 +87,7 @@
       <workItem from="1775305732033" duration="1000" />
       <workItem from="1775306074760" duration="87000" />
       <workItem from="1775336255126" duration="6831000" />
-      <workItem from="1775350440846" duration="2716000" />
+      <workItem from="1775350440846" duration="3979000" />
     </task>
     <task id="LOCAL-00001" summary="feat: experimental tasks">
       <option name="closed" value="true" />
@@ -129,7 +129,23 @@
       <option name="project" value="LOCAL" />
       <updated>1775388741155</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="feat: 2 sep pages for tasks">
+      <option name="closed" value="true" />
+      <created>1775389378122</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1775389378122</updated>
+    </task>
+    <task id="LOCAL-00007" summary="fix: display a useful msg when failing to create a task">
+      <option name="closed" value="true" />
+      <created>1775389881419</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1775389881419</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -151,7 +167,9 @@
     <MESSAGE value="fix: deploy_auth.sh" />
     <MESSAGE value="feat: change frontend" />
     <MESSAGE value="fix: change task giver info" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: change task giver info" />
+    <MESSAGE value="feat: 2 sep pages for tasks" />
+    <MESSAGE value="fix: display a useful msg when failing to create a task" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: display a useful msg when failing to create a task" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

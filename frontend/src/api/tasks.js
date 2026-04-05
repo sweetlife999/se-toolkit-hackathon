@@ -10,12 +10,50 @@ async function parseError(response, fallbackMessage) {
   const contentType = response.headers.get("content-type") || "";
 
   function formatDetail(detail) {
+    const fieldLabel = {
+      title: "Title",
+      description: "Description",
+      price: "Price",
+      estimated_minutes: "Estimated time",
+      mode: "Mode",
+      tags: "Tags",
+    };
+
+    function toFriendlyMessage(path, message) {
+      const normalizedPath = path.split(".").filter(Boolean);
+      const fieldKey = normalizedPath[normalizedPath.length - 1] || "";
+      const field = fieldLabel[fieldKey] || "Field";
+      const lowerMsg = message.toLowerCase();
+
+      if (lowerMsg.includes("at least") && lowerMsg.includes("characters")) {
+        return `${field} is too short.`;
+      }
+
+      if (lowerMsg.includes("at most") && lowerMsg.includes("characters")) {
+        return `${field} is too long.`;
+      }
+
+      if (lowerMsg.includes("greater than") || lowerMsg.includes("positive")) {
+        return `${field} must be greater than 0.`;
+      }
+
+      if (lowerMsg.includes("field required")) {
+        return `${field} is required.`;
+      }
+
+      if (lowerMsg.includes("input should be")) {
+        return `${field} has an invalid value.`;
+      }
+
+      return `${field}: ${message}`;
+    }
+
     if (typeof detail === "string") {
-      return detail;
+      return { message: detail, issues: [] };
     }
 
     if (Array.isArray(detail)) {
-      return detail
+      const issues = detail
         .map((item) => {
           if (typeof item === "string") {
             return item;
@@ -26,29 +64,41 @@ async function parseError(response, fallbackMessage) {
               ? item.loc.filter((part) => part !== "body").join(".")
               : "";
             const message = typeof item.msg === "string" ? item.msg : "Invalid value";
-            return path ? `${path}: ${message}` : message;
+            return toFriendlyMessage(path, message);
           }
 
           return String(item);
         })
-        .filter(Boolean)
-        .join("; ");
+        .filter(Boolean);
+
+      return {
+        message: issues[0] || "Please review the highlighted fields.",
+        issues,
+      };
     }
 
     if (detail && typeof detail === "object") {
-      return typeof detail.msg === "string" ? detail.msg : "";
+      const message = typeof detail.msg === "string" ? detail.msg : "";
+      return { message, issues: message ? [message] : [] };
     }
 
-    return "";
+    return { message: "", issues: [] };
   }
 
   if (contentType.includes("application/json")) {
     const payload = await response.json();
-    return formatDetail(payload.detail) || payload.message || fallbackMessage;
+    const formatted = formatDetail(payload.detail);
+    return {
+      message: formatted.message || payload.message || fallbackMessage,
+      issues: formatted.issues,
+    };
   }
 
   const text = await response.text();
-  return text || fallbackMessage;
+  return {
+    message: text || fallbackMessage,
+    issues: [],
+  };
 }
 
 function authHeaders() {
@@ -68,8 +118,11 @@ async function request(path, options = {}) {
   });
 
   if (!response.ok) {
-    const message = await parseError(response, "Request failed");
-    throw new Error(message);
+    const parsed = await parseError(response, "Request failed");
+    const message = parsed.issues.length > 0 ? "Please fix the fields below." : parsed.message;
+    const error = new Error(message);
+    error.issues = parsed.issues;
+    throw error;
   }
 
   return response.json();
