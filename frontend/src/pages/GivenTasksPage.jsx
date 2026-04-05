@@ -5,6 +5,7 @@ import { getGivenTasks } from "../api/tasks";
 function GivenTaskCard({ task }) {
   const creatorHandle = task.creator_telegram_username ? task.creator_telegram_username.replace(/^@/, "") : "";
   const creatorLabel = creatorHandle ? `@${creatorHandle}` : "You";
+  const difficultyLabel = task.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
   const workStatus =
     task.status === "in_work"
       ? "In work"
@@ -22,6 +23,7 @@ function GivenTaskCard({ task }) {
           <h2>
             <Link to={`/tasks/${task.id}`}>{task.title || `Task #${task.id}`}</Link>
           </h2>
+          <span className={`difficulty-badge difficulty-${task.difficulty || "medium"}`}>{difficultyLabel}</span>
         </div>
         <span className={`status status-${task.status}`}>{task.status}</span>
       </div>

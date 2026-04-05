@@ -5,6 +5,7 @@ import { getTasks, takeTask } from "../api/tasks";
 function TaskCard({ task, onTake, takingId }) {
   const isTaking = takingId === task.id;
   const creatorLabel = task.creator_telegram_username || `#${task.creator_id}`;
+  const difficultyLabel = task.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
 
   return (
     <article className="task-card">
@@ -14,6 +15,7 @@ function TaskCard({ task, onTake, takingId }) {
           <h2>
             <Link to={`/tasks/${task.id}`}>{task.title || `Task #${task.id}`}</Link>
           </h2>
+          <span className={`difficulty-badge difficulty-${task.difficulty || "medium"}`}>{difficultyLabel}</span>
         </div>
         <span className={`status status-${task.status}`}>{task.status}</span>
       </div>

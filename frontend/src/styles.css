@@ -316,6 +316,31 @@ h1 {
   letter-spacing: 0.04em;
 }
 
+.difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.difficulty-easy {
+  background: rgba(42, 157, 143, 0.14);
+  color: #17675f;
+}
+
+.difficulty-medium {
+  background: rgba(247, 127, 0, 0.14);
+  color: #a64f00;
+}
+
+.difficulty-hard {
+  background: rgba(193, 18, 31, 0.14);
+  color: #8f1120;
+}
+
 .status-open {
   background: rgba(247, 127, 0, 0.12);
   color: var(--warning);

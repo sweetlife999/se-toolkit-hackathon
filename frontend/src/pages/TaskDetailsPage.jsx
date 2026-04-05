@@ -122,6 +122,7 @@ export default function TaskDetailsPage() {
   const canComplete = task?.status === "in_work" && isCreator;
   const canCancel = isCreator && (task?.status === "open" || task?.status === "in_work");
   const creatorLabel = task?.creator_telegram_username || `#${task?.creator_id}`;
+  const difficultyLabel = task?.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
 
   return (
     <div className="page-shell">
@@ -143,6 +144,7 @@ export default function TaskDetailsPage() {
         <div className="task-card-head">
           <div>
             <p className="eyebrow">{task.mode}</p>
+            <span className={`difficulty-badge difficulty-${task.difficulty || "medium"}`}>{difficultyLabel}</span>
             <span className={`status status-${task.status}`}>{task.status}</span>
           </div>
           <div className="task-meta">
