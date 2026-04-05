@@ -20,6 +20,8 @@ class UserOut(BaseModel):
     id: int
     telegram_username: str
     balance: int
+    tasks_created: int = 0
+    tasks_finished: int = 0
 
     model_config = {"from_attributes": True}
 

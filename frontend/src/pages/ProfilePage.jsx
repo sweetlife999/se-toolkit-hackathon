@@ -64,8 +64,9 @@ export default function ProfilePage() {
 
       <section className="panel">
         <p>Telegram: {user?.telegram_username}</p>
-        <p>User ID: {user?.id}</p>
         <p>Balance: {user?.balance ?? 0}</p>
+        <p>Tasks created: {user?.tasks_created ?? 0}</p>
+        <p>Tasks finished: {user?.tasks_finished ?? 0}</p>
 
         <div className="actions">
           <Link className="secondary-link" to="/tasks">

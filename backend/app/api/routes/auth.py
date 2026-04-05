@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.core.security import create_access_token, get_password_hash, verify_password
+from app.db.tasks_session import get_tasks_db
 from app.db.session import get_db
+from app.models.task import Task, TaskStatus
 from app.models.user import User
 from app.schemas.auth import Token, UserOut, UserRegister
 
@@ -45,5 +47,18 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 
 @router.get("/me", response_model=UserOut)
-def me(current_user: User = Depends(get_current_user)) -> User:
-    return current_user
+def me(current_user: User = Depends(get_current_user), tasks_db: Session = Depends(get_tasks_db)) -> UserOut:
+    tasks_created = tasks_db.query(Task).filter(Task.creator_id == current_user.id).count()
+    tasks_finished = (
+        tasks_db.query(Task)
+        .filter(Task.creator_id == current_user.id, Task.status == TaskStatus.done)
+        .count()
+    )
+
+    return UserOut(
+        id=current_user.id,
+        telegram_username=current_user.telegram_username,
+        balance=current_user.balance,
+        tasks_created=tasks_created,
+        tasks_finished=tasks_finished,
+    )
