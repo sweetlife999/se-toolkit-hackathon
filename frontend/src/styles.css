@@ -30,6 +30,11 @@ a {
   color: var(--accent-dark);
   font-weight: 600;
   text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent);
 }
 
 button,
@@ -76,6 +81,15 @@ button:active {
 button:disabled {
   opacity: 0.75;
   cursor: not-allowed;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(247, 127, 0, 0.55);
+  outline-offset: 2px;
 }
 
 .auth-wrapper {
@@ -133,11 +147,17 @@ h1 {
 .secondary-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   padding: 0.65rem 0.9rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--border);
+}
+
+.topbar-nav a:hover,
+.secondary-link:hover {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .form-panel,
@@ -251,6 +271,19 @@ h1 {
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
+}
+
+.actions .secondary-link {
+  min-height: 42px;
+  font-weight: 700;
+}
+
+.danger-button {
+  background: var(--error);
+}
+
+.danger-button:hover {
+  background: #a90f1a;
 }
 
 .eyebrow {

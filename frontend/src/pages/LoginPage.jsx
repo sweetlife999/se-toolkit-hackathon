@@ -17,7 +17,7 @@ export default function LoginPage() {
     try {
       const data = await login(telegramUsername, password);
       setToken(data.access_token);
-      navigate("/profile");
+      navigate("/tasks");
     } catch (err) {
       setError(err.message);
     } finally {

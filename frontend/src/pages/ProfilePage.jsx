@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { clearToken, fetchMe } from "../api/auth";
 
 export default function ProfilePage() {
@@ -18,7 +18,7 @@ export default function ProfilePage() {
       })
       .catch(() => {
         clearToken();
-        navigate("/login");
+        navigate("/login", { replace: true });
       })
       .finally(() => {
         if (mounted) {
@@ -33,21 +33,51 @@ export default function ProfilePage() {
 
   const onLogout = () => {
     clearToken();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
+  const telegramHandle = (user?.telegram_username || "").replace(/^@/, "");
+  const telegramProfileUrl = telegramHandle ? `https://t.me/${telegramHandle}` : null;
+
   if (loading) {
-    return <div className="auth-wrapper">Loading profile...</div>;
+    return (
+      <div className="page-shell">
+        <div className="panel">Loading profile...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="auth-wrapper">
-      <div className="auth-card">
-        <h1>Your profile</h1>
+    <div className="page-shell">
+      <header className="topbar">
+        <div>
+          <p className="eyebrow">Account</p>
+          <h1>Your profile</h1>
+        </div>
+        <nav className="topbar-nav">
+          <Link to="/tasks">Feed</Link>
+          <Link to="/tasks/new">Create task</Link>
+        </nav>
+      </header>
+
+      <section className="panel">
         <p>Telegram: {user?.telegram_username}</p>
         <p>User ID: {user?.id}</p>
-        <button onClick={onLogout}>Logout</button>
-      </div>
+
+        <div className="actions">
+          <Link className="secondary-link" to="/tasks">
+            Go to tasks
+          </Link>
+          {telegramProfileUrl && (
+            <a className="secondary-link" href={telegramProfileUrl} target="_blank" rel="noreferrer">
+              Open Telegram profile
+            </a>
+          )}
+          <button type="button" className="danger-button" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
+      </section>
     </div>
   );
 }
