@@ -13,7 +13,7 @@ async function parseError(response, fallbackMessage) {
     const fieldLabel = {
       title: "Title",
       description: "Description",
-      price: "Price",
+      reward: "Reward",
       estimated_minutes: "Estimated time",
       mode: "Mode",
       tags: "Tags",
@@ -43,6 +43,10 @@ async function parseError(response, fallbackMessage) {
 
       if (lowerMsg.includes("input should be")) {
         return `${field} has an invalid value.`;
+      }
+
+      if (lowerMsg.includes("integer") || lowerMsg.includes("whole number")) {
+        return `${field} must be a whole number.`;
       }
 
       return `${field}: ${message}`;
@@ -173,6 +177,12 @@ export async function takeTask(taskId) {
 
 export async function completeTask(taskId) {
   return request(`/tasks/${taskId}/complete`, {
+    method: "POST",
+  });
+}
+
+export async function cancelTask(taskId) {
+  return request(`/tasks/${taskId}/cancel`, {
     method: "POST",
   });
 }

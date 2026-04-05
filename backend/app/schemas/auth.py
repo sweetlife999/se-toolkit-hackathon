@@ -19,6 +19,7 @@ class UserLogin(BaseModel):
 class UserOut(BaseModel):
     id: int
     telegram_username: str
+    balance: int
 
     model_config = {"from_attributes": True}
 

@@ -19,6 +19,7 @@ def register(payload: UserRegister, db: Session = Depends(get_db)) -> User:
         user = User(
             telegram_username=payload.telegram_username,
             hashed_password=get_password_hash(payload.password),
+            balance=0,
         )
 
         db.add(user)

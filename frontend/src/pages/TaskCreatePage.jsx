@@ -5,7 +5,7 @@ import { createTask } from "../api/tasks";
 const EMPTY_TASK = {
   title: "",
   description: "",
-  price: "",
+  reward: "",
   estimatedMinutes: "",
   mode: "online",
 };
@@ -52,7 +52,7 @@ export default function TaskCreatePage() {
       const created = await createTask({
         title: form.title.trim() || null,
         description: form.description.trim(),
-        price: Number(form.price),
+        reward: Number(form.reward),
         estimated_minutes: Number(form.estimatedMinutes),
         mode: form.mode,
         tags,
@@ -109,16 +109,18 @@ export default function TaskCreatePage() {
 
         <div className="form-grid">
           <label>
-            Price
+            Reward
             <input
               type="number"
-              min="0.01"
-              step="0.01"
-              value={form.price}
-              onChange={(e) => setForm({ ...form, price: e.target.value })}
-              placeholder="10.00"
+              min="1"
+              step="1"
+              value={form.reward}
+              onChange={(e) => setForm({ ...form, reward: e.target.value })}
+              placeholder="100"
+              inputMode="numeric"
               required
             />
+            <small>Suggested starting reward: 100.</small>
           </label>
 
           <label>

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt
 
 from app.models.task import TaskMode, TaskStatus
 
@@ -18,7 +18,7 @@ class TaskTagOut(BaseModel):
 class TaskCreate(BaseModel):
     title: Optional[str] = Field(default=None, max_length=120)
     description: str = Field(min_length=5, max_length=10_000)
-    price: PositiveFloat
+    reward: PositiveInt
     estimated_minutes: PositiveInt
     mode: TaskMode
     tags: List[str] = Field(default_factory=list)
@@ -34,7 +34,7 @@ class TaskOut(BaseModel):
     creator_telegram_username: Optional[str] = None
     title: Optional[str]
     description: str
-    price: float
+    reward: int
     estimated_minutes: int
     mode: TaskMode
     status: TaskStatus

@@ -12,13 +12,15 @@ Auth-first release baseline for VibErrands, now extended with the first task lif
 - Login with JWT access token
 - Protected endpoint: get current user profile
 - Frontend pages: register, login, profile, logout
-- PostgreSQL setup with `users` table and a separate tasks database
+- User balances, task rewards, task cancellation, and separate tasks database
 
 ## Project structure
 - `backend/` FastAPI service
 - `frontend/` React app
 - `db/` SQL bootstrap scripts
 - `docker-compose.yml` PostgreSQL container
+- `deploy/vm/deploy.sh` one-shot VM deploy script
+- `db/reset_everything.sh` destructive data reset script
 
 ## Run the database
 ```bash
@@ -61,10 +63,11 @@ Frontend runs at `http://localhost:5173` and expects backend at `http://localhos
 - `POST /tasks/{task_id}/complete` with `Authorization: Bearer <token>`
 
 ## Current task flow
-- Create task with description, price, estimated minutes, mode, and tags
+- Create task with description, reward, estimated minutes, mode, and tags
 - Browse open tasks with filters by mode and tag
 - Take a task into work
 - Creator marks the task as done
+- Creator can also cancel a task before completion and get the reserved reward back
 
 ## Environment
 - `DATABASE_URL` points to the auth database

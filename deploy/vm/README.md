@@ -6,7 +6,8 @@ This folder contains a one-shot script and templates to deploy the current VibEr
 - React frontend (built and served by Nginx)
 
 ## Files
-- `deploy_auth.sh`: installs dependencies, starts PostgreSQL container, builds frontend, configures backend env, configures systemd and Nginx.
+- `deploy.sh`: installs dependencies, starts PostgreSQL container, builds frontend, configures backend env, configures systemd and Nginx.
+- `../../db/reset_everything.sh`: drops and recreates auth/tasks databases, then re-initializes auth data.
 - `viberrands-auth.service.template`: reference systemd unit.
 - `nginx.viberrands-auth.conf.template`: reference Nginx server block.
 
@@ -18,13 +19,13 @@ This folder contains a one-shot script and templates to deploy the current VibEr
 ## Quick start (IP-based)
 ```bash
 cd /opt/se-toolkit-hackathon
-sudo chmod +x deploy/vm/deploy_auth.sh
+sudo chmod +x deploy/vm/deploy.sh
 sudo DOMAIN=10.93.26.73 \
   PUBLIC_ORIGIN=http://10.93.26.73 \
   CORS_ORIGINS=http://10.93.26.73 \
   JWT_SECRET_KEY='replace-with-strong-random-secret' \
   DB_PASSWORD='replace-db-password' \
-  bash deploy/vm/deploy_auth.sh
+  bash deploy/vm/deploy.sh
 ```
 
 After deploy:
@@ -42,7 +43,22 @@ sudo ENABLE_TLS=true \
   CORS_ORIGINS=https://api.your-domain.com \
   JWT_SECRET_KEY='replace-with-strong-random-secret' \
   DB_PASSWORD='replace-db-password' \
-  bash deploy/vm/deploy_auth.sh
+  bash deploy/vm/deploy.sh
+```
+
+## Full reset / remake data
+Use this when you want to remove all users and tasks and start from a clean state again.
+
+```bash
+cd /opt/se-toolkit-hackathon
+sudo chmod +x db/reset_everything.sh
+sudo CONFIRM=YES bash db/reset_everything.sh
+```
+
+After the reset, restart the backend so it recreates the task tables:
+
+```bash
+sudo systemctl restart viberrands-auth
 ```
 
 ## Important variables
@@ -72,5 +88,6 @@ sudo docker compose ps
 
 ## Notes
 - Script is idempotent for repeated runs in most cases.
+- `db/reset_everything.sh` is destructive: it removes all users and tasks data.
 - Replace default secrets and DB password before exposing publicly.
 - Keep PostgreSQL unexposed externally unless required.

@@ -75,17 +75,29 @@ def _creator_username_map(auth_db: Session, creator_ids: Iterable[int]) -> Dict[
     return {user_id: telegram_username for user_id, telegram_username in rows}
 
 
+def _get_auth_user_or_404(auth_db: Session, user_id: int) -> User:
+    user = auth_db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
+
 @router.post("", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
 def create_task(
     payload: TaskCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_tasks_db),
+    auth_db: Session = Depends(get_db),
 ) -> TaskOut:
+    creator = _get_auth_user_or_404(auth_db, current_user.id)
+    if creator.balance < payload.reward:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Insufficient balance to create task")
+
     task = Task(
         creator_id=current_user.id,
         title=payload.title.strip() if payload.title else None,
         description=payload.description.strip(),
-        price=payload.price,
+        reward=payload.reward,
         estimated_minutes=payload.estimated_minutes,
         mode=payload.mode,
         status=TaskStatus.open,
@@ -100,6 +112,18 @@ def create_task(
     except Exception as exc:
         db.rollback()
         raise HTTPException(status_code=500, detail="Could not create task") from exc
+
+    creator.balance -= payload.reward
+    try:
+        auth_db.commit()
+    except Exception as exc:
+        auth_db.rollback()
+        try:
+            db.delete(task)
+            db.commit()
+        except Exception:
+            db.rollback()
+        raise HTTPException(status_code=500, detail="Could not reserve reward") from exc
 
     return _serialize_task(_get_task_or_404(db, task.id), creator_telegram_username=current_user.telegram_username)
 
@@ -203,6 +227,7 @@ def complete_task(
     if task.status != TaskStatus.in_work:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only tasks in work can be completed")
 
+    assignee_id = task.assignee_id
     task.status = TaskStatus.done
 
     try:
@@ -210,6 +235,64 @@ def complete_task(
     except Exception as exc:
         db.rollback()
         raise HTTPException(status_code=500, detail="Could not complete task") from exc
+
+    assignee = _get_auth_user_or_404(auth_db, assignee_id) if assignee_id is not None else None
+    if assignee is None:
+        task.status = TaskStatus.in_work
+        db.commit()
+        raise HTTPException(status_code=500, detail="Could not reward assignee")
+
+    assignee.balance += int(task.reward)
+    try:
+        auth_db.commit()
+    except Exception as exc:
+        auth_db.rollback()
+        task.status = TaskStatus.in_work
+        db.commit()
+        raise HTTPException(status_code=500, detail="Could not reward assignee") from exc
+
+    task = _get_task_or_404(db, task_id)
+    creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
+    return _serialize_task(task, creator_telegram_username=creator_username)
+
+
+@router.post("/{task_id}/cancel", response_model=TaskOut)
+def cancel_task(
+    task_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_tasks_db),
+    auth_db: Session = Depends(get_db),
+) -> TaskOut:
+    task = _get_task_or_404(db, task_id)
+
+    if task.creator_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the creator can cancel this task")
+
+    if task.status not in {TaskStatus.open, TaskStatus.in_work}:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only open or in-work tasks can be cancelled")
+
+    previous_status = task.status
+    previous_assignee_id = task.assignee_id
+
+    task.status = TaskStatus.cancelled
+    task.assignee_id = None
+
+    try:
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Could not cancel task") from exc
+
+    creator = _get_auth_user_or_404(auth_db, current_user.id)
+    creator.balance += int(task.reward)
+    try:
+        auth_db.commit()
+    except Exception as exc:
+        auth_db.rollback()
+        task.status = previous_status
+        task.assignee_id = previous_assignee_id
+        db.commit()
+        raise HTTPException(status_code=500, detail="Could not refund reward") from exc
 
     task = _get_task_or_404(db, task_id)
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()

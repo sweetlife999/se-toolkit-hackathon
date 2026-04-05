@@ -3,7 +3,16 @@ import { Link } from "react-router-dom";
 import { getGivenTasks } from "../api/tasks";
 
 function GivenTaskCard({ task }) {
-  const creatorLabel = task.creator_telegram_username || `#${task.creator_id}`;
+  const creatorHandle = task.creator_telegram_username ? task.creator_telegram_username.replace(/^@/, "") : "";
+  const creatorLabel = creatorHandle ? `@${creatorHandle}` : "You";
+  const workStatus =
+    task.status === "in_work"
+      ? "In work"
+      : task.status === "done"
+        ? "Done"
+        : task.status === "cancelled"
+          ? "Cancelled"
+          : "Open";
 
   return (
     <article className="task-card">
@@ -20,10 +29,10 @@ function GivenTaskCard({ task }) {
       <p className="task-description">{task.description}</p>
 
       <div className="task-meta">
-        <span>Price: {Number(task.price).toFixed(2)}</span>
+        <span>Reward: {Number(task.reward)}</span>
         <span>Time: {task.estimated_minutes} min</span>
-        <span>Creator: {creatorLabel}</span>
-        {task.assignee_id ? <span>Assignee: #{task.assignee_id}</span> : <span>Assignee: none</span>}
+        <span>Created by: {creatorLabel}</span>
+        <span>Work state: {workStatus}</span>
       </div>
 
       <div className="chip-list">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchMe } from "../api/auth";
-import { completeTask, getTask, takeTask } from "../api/tasks";
+import { cancelTask, completeTask, getTask, takeTask } from "../api/tasks";
 
 function TagList({ tags }) {
   if (!tags.length) {
@@ -88,6 +88,20 @@ export default function TaskDetailsPage() {
     }
   };
 
+  const onCancel = async () => {
+    setError("");
+    setActionLoading(true);
+
+    try {
+      const updated = await cancelTask(taskId);
+      setTask(updated);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="page-shell"><div className="panel">Loading task...</div></div>;
   }
@@ -106,6 +120,7 @@ export default function TaskDetailsPage() {
   const isCreator = currentUser?.id === task?.creator_id;
   const canTake = task?.status === "open" && !isCreator;
   const canComplete = task?.status === "in_work" && isCreator;
+  const canCancel = isCreator && (task?.status === "open" || task?.status === "in_work");
   const creatorLabel = task?.creator_telegram_username || `#${task?.creator_id}`;
 
   return (
@@ -131,7 +146,7 @@ export default function TaskDetailsPage() {
             <span className={`status status-${task.status}`}>{task.status}</span>
           </div>
           <div className="task-meta">
-            <span>Price: {Number(task.price).toFixed(2)}</span>
+            <span>Reward: {Number(task.reward)}</span>
             <span>Estimated: {task.estimated_minutes} min</span>
             <span>Creator: {creatorLabel}</span>
             {task.assignee_id ? <span>Assignee: #{task.assignee_id}</span> : <span>Assignee: none</span>}
@@ -153,6 +168,11 @@ export default function TaskDetailsPage() {
           {canComplete && (
             <button type="button" onClick={onComplete} disabled={actionLoading}>
               {actionLoading ? "Saving..." : "Mark done"}
+            </button>
+          )}
+          {canCancel && (
+            <button type="button" className="danger-button" onClick={onCancel} disabled={actionLoading}>
+              {actionLoading ? "Cancelling..." : "Cancel task"}
             </button>
           )}
           <Link className="secondary-link" to="/tasks">

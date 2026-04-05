@@ -21,7 +21,7 @@ function TaskCard({ task, onTake, takingId }) {
       <p className="task-description">{task.description}</p>
 
       <div className="task-meta">
-        <span>Price: {Number(task.price).toFixed(2)}</span>
+        <span>Reward: {Number(task.reward)}</span>
         <span>Time: {task.estimated_minutes} min</span>
         <span>Creator: {creatorLabel}</span>
       </div>

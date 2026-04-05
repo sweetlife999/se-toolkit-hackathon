@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, Enum as SAEnum, ForeignKey, Integer, Numeric, String, Table, Text, func
+from sqlalchemy import Column, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Table, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -21,6 +21,7 @@ class TaskStatus(str, Enum):
     open = "open"
     in_work = "in_work"
     done = "done"
+    cancelled = "cancelled"
 
 
 task_tags = Table(
@@ -45,7 +46,7 @@ class Task(TaskBase):
     creator_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     title: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
+    reward: Mapped[int] = mapped_column(Integer, nullable=False)
     estimated_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
     mode: Mapped[TaskMode] = mapped_column(SAEnum(TaskMode, name="task_mode"), nullable=False, index=True)
     status: Mapped[TaskStatus] = mapped_column(

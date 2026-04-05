@@ -55,6 +55,17 @@ textarea {
   color: var(--text-main);
 }
 
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
 textarea {
   resize: vertical;
 }
@@ -318,6 +329,11 @@ h1 {
 .status-done {
   background: rgba(17, 138, 178, 0.12);
   color: #1d5f86;
+}
+
+.status-cancelled {
+  background: rgba(113, 128, 150, 0.14);
+  color: #52606d;
 }
 
 .error {
