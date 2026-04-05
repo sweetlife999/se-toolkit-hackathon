@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { clearToken, fetchMe } from "../api/auth";
+import { clearToken, fetchMe, getUserHistory } from "../api/auth";
+import {
+  adminDecrementUserBalance,
+  adminIncrementAllBalances,
+  adminIncrementUserBalance,
+  adminRemoveTask,
+  verifyAdmin,
+} from "../api/admin";
 import { getTaskHistory } from "../api/tasks";
 
 export default function ProfilePage() {
@@ -10,37 +17,80 @@ export default function ProfilePage() {
   const [historyError, setHistoryError] = useState("");
   const [historyCategory, setHistoryCategory] = useState("all");
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [adminPanelOpen, setAdminPanelOpen] = useState(false);
+  const [adminHandle, setAdminHandle] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [adminError, setAdminError] = useState("");
+  const [adminNotice, setAdminNotice] = useState("");
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [removeTaskId, setRemoveTaskId] = useState("");
+  const [incUserHandle, setIncUserHandle] = useState("");
+  const [incUserAmount, setIncUserAmount] = useState("");
+  const [allAmount, setAllAmount] = useState("");
+  const [allMessage, setAllMessage] = useState("");
+  const [decUserHandle, setDecUserHandle] = useState("");
+  const [decUserAmount, setDecUserAmount] = useState("");
+  const [decComment, setDecComment] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const loadUserAndHistory = async (category) => {
+    const taskHistoryPromise = category === "admin" ? Promise.resolve([]) : getTaskHistory(120, category);
+    const [profile, taskActivity, adminActivity] = await Promise.all([fetchMe(), taskHistoryPromise, getUserHistory(120)]);
+
+    const mappedTask = category === "admin"
+      ? []
+      : taskActivity.map((entry) => ({ ...entry, source: "task", uid: `task-${entry.id}-${entry.created_at}` }));
+
+    const mappedAdmin = adminActivity.map((entry) => ({
+      ...entry,
+      source: "admin",
+      uid: `admin-${entry.id}-${entry.created_at}`,
+    }));
+
+    const merged = (category === "all"
+      ? [...mappedTask, ...mappedAdmin]
+      : category === "admin"
+        ? mappedAdmin
+        : mappedTask
+    ).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    return { profile, merged };
+  };
 
   useEffect(() => {
     let mounted = true;
+    setHistoryError("");
+    setHistoryLoading(true);
 
-    fetchMe()
-      .then((profile) => {
+    loadUserAndHistory(historyCategory)
+      .then(({ profile, merged }) => {
         if (mounted) {
           setUser(profile);
+          setHistory(merged);
         }
       })
       .catch((err) => {
-        if (err?.message === "Unauthorized") {
+        if (err?.message === "Unauthorized" || String(err?.message || "").toLowerCase().includes("credentials")) {
           clearToken();
           navigate("/login", { replace: true });
           return;
         }
         if (mounted) {
-          setHistoryError(err?.message || "Could not load history");
+          setHistoryError(err?.message || "Could not load profile");
         }
       })
       .finally(() => {
         if (mounted) {
           setLoading(false);
+          setHistoryLoading(false);
         }
       });
 
     return () => {
       mounted = false;
     };
-  }, [navigate]);
+  }, [navigate, historyCategory]);
 
   const onLogout = () => {
     clearToken();
@@ -50,38 +100,100 @@ export default function ProfilePage() {
   const telegramHandle = (user?.telegram_username || "").replace(/^@/, "");
   const telegramProfileUrl = telegramHandle ? `https://t.me/${telegramHandle}` : null;
 
-  useEffect(() => {
-    if (!user) {
-      return;
+  const withAdminAuth = (extra = {}) => ({
+    admin_handle: adminHandle.trim(),
+    admin_password: adminPassword,
+    ...extra,
+  });
+
+  const refreshAfterAdminAction = async () => {
+    const { profile, merged } = await loadUserAndHistory(historyCategory);
+    setUser(profile);
+    setHistory(merged);
+  };
+
+  const runAdminAction = async (action, successMessage) => {
+    setAdminError("");
+    setAdminNotice("");
+    setAdminLoading(true);
+    try {
+      await action();
+      await refreshAfterAdminAction();
+      setAdminNotice(successMessage);
+    } catch (err) {
+      setAdminError(err.message || "Admin action failed");
+    } finally {
+      setAdminLoading(false);
     }
+  };
 
-    let mounted = true;
-    setHistoryLoading(true);
-    setHistoryError("");
+  const onVerifyAdmin = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      async () => {
+        await verifyAdmin(withAdminAuth());
+        setAdminUnlocked(true);
+      },
+      "Admin access granted"
+    );
+  };
 
-    getTaskHistory(120, historyCategory)
-      .then((activity) => {
-        if (mounted) {
-          setHistory(activity);
-        }
-      })
-      .catch((err) => {
-        if (mounted) {
-          setHistoryError(err?.message || "Could not load history");
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setHistoryLoading(false);
-        }
-      });
+  const onRemoveTask = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      () => adminRemoveTask(withAdminAuth({ task_id: Number(removeTaskId) })),
+      "Task removed"
+    );
+  };
 
-    return () => {
-      mounted = false;
-    };
-  }, [user, historyCategory]);
+  const onIncrementUser = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      () =>
+        adminIncrementUserBalance(
+          withAdminAuth({
+            user_handle: incUserHandle.trim(),
+            amount: Number(incUserAmount),
+          })
+        ),
+      "User balance incremented"
+    );
+  };
+
+  const onIncrementAll = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      () =>
+        adminIncrementAllBalances(
+          withAdminAuth({
+            amount: Number(allAmount),
+            message: allMessage.trim(),
+          })
+        ),
+      "All balances incremented"
+    );
+  };
+
+  const onDecrementUser = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      () =>
+        adminDecrementUserBalance(
+          withAdminAuth({
+            user_handle: decUserHandle.trim(),
+            amount: Number(decUserAmount),
+            comment: decComment.trim(),
+          })
+        ),
+      "User balance decremented"
+    );
+  };
 
   const formatHistoryLine = (entry) => {
+    if (entry.source === "admin") {
+      return entry.message;
+    }
+
     const me = user?.telegram_username;
     const actor = entry.actor_username === me ? "You" : entry.actor_username;
     const other = entry.other_username || "unknown";
@@ -174,8 +286,138 @@ export default function ProfilePage() {
           <button type="button" className="danger-button" onClick={onLogout}>
             Logout
           </button>
+          <button type="button" onClick={() => setAdminPanelOpen((current) => !current)}>
+            {adminPanelOpen ? "Close admin panel" : "Open admin panel"}
+          </button>
         </div>
       </section>
+
+      {adminPanelOpen && (
+        <section className="panel">
+          <h2>Admin panel</h2>
+          <form className="admin-grid" onSubmit={onVerifyAdmin}>
+            <label>
+              Your handle
+              <input
+                value={adminHandle}
+                onChange={(e) => setAdminHandle(e.target.value)}
+                placeholder="@admin_handle"
+                required
+              />
+            </label>
+            <label>
+              Admin password
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Admin password"
+                required
+              />
+            </label>
+            <button type="submit" disabled={adminLoading}>
+              {adminLoading ? "Checking..." : "Unlock"}
+            </button>
+          </form>
+
+          {adminError && <p className="error">{adminError}</p>}
+          {adminNotice && <p className="admin-notice">{adminNotice}</p>}
+
+          {adminUnlocked && (
+            <div className="admin-actions-wrap">
+              <form className="admin-action" onSubmit={onRemoveTask}>
+                <h3>Remove task</h3>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={removeTaskId}
+                  onChange={(e) => setRemoveTaskId(e.target.value)}
+                  placeholder="Task ID"
+                  required
+                />
+                <button type="submit" disabled={adminLoading}>
+                  Remove task
+                </button>
+              </form>
+
+              <form className="admin-action" onSubmit={onIncrementUser}>
+                <h3>Increment one user</h3>
+                <input
+                  value={incUserHandle}
+                  onChange={(e) => setIncUserHandle(e.target.value)}
+                  placeholder="@user_handle"
+                  required
+                />
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={incUserAmount}
+                  onChange={(e) => setIncUserAmount(e.target.value)}
+                  placeholder="Amount"
+                  required
+                />
+                <button type="submit" disabled={adminLoading}>
+                  Increment user
+                </button>
+              </form>
+
+              <form className="admin-action" onSubmit={onIncrementAll}>
+                <h3>Increment everybody</h3>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={allAmount}
+                  onChange={(e) => setAllAmount(e.target.value)}
+                  placeholder="Amount"
+                  required
+                />
+                <textarea
+                  rows="3"
+                  value={allMessage}
+                  onChange={(e) => setAllMessage(e.target.value)}
+                  placeholder="Message for everybody"
+                  required
+                />
+                <button type="submit" disabled={adminLoading}>
+                  Increment all
+                </button>
+              </form>
+
+              <form className="admin-action" onSubmit={onDecrementUser}>
+                <h3>Decrement one user</h3>
+                <input
+                  value={decUserHandle}
+                  onChange={(e) => setDecUserHandle(e.target.value)}
+                  placeholder="@user_handle"
+                  required
+                />
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={decUserAmount}
+                  onChange={(e) => setDecUserAmount(e.target.value)}
+                  placeholder="Amount"
+                  required
+                />
+                <textarea
+                  rows="3"
+                  value={decComment}
+                  onChange={(e) => setDecComment(e.target.value)}
+                  placeholder="Comment"
+                  required
+                />
+                <button type="submit" disabled={adminLoading}>
+                  Decrement user
+                </button>
+              </form>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="panel">
         <div className="history-header">
@@ -188,6 +430,7 @@ export default function ProfilePage() {
               <option value="taken">Taken</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
+              <option value="admin">Admin</option>
             </select>
           </label>
         </div>
@@ -200,7 +443,7 @@ export default function ProfilePage() {
         ) : (
           <div className="history-list">
             {history.map((entry) => (
-              <div key={entry.id} className="history-row">
+              <div key={entry.uid || entry.id} className="history-row">
                 <span>{formatHistoryLine(entry)}</span>
                 <span className="history-meta">
                   <span

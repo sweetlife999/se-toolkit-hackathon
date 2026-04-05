@@ -159,3 +159,23 @@ export async function fetchMe() {
 
   return response.json();
 }
+
+export async function getUserHistory(limit = 120) {
+  const token = getToken();
+  const params = new URLSearchParams();
+  params.set("limit", String(limit));
+
+  const response = await fetch(apiUrl(`/auth/history?${params.toString()}`), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const parsed = await parseError(response, "Could not load history");
+    throw new Error(parsed.message);
+  }
+
+  return response.json();
+}
+

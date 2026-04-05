@@ -8,8 +8,8 @@ from app.core.security import create_access_token, get_password_hash, verify_pas
 from app.db.tasks_session import get_tasks_db
 from app.db.session import get_db
 from app.models.task import Task, TaskStatus
-from app.models.user import User
-from app.schemas.auth import Token, UserOut, UserRegister
+from app.models.user import User, UserHistory
+from app.schemas.auth import Token, UserHistoryOut, UserOut, UserRegister
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -62,3 +62,19 @@ def me(current_user: User = Depends(get_current_user), tasks_db: Session = Depen
         tasks_created=tasks_created,
         tasks_finished=tasks_finished,
     )
+
+
+@router.get("/history", response_model=list[UserHistoryOut])
+def user_history(
+    limit: int = 200,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> list[UserHistoryOut]:
+    return (
+        db.query(UserHistory)
+        .filter(UserHistory.user_id == current_user.id)
+        .order_by(UserHistory.created_at.desc(), UserHistory.id.desc())
+        .limit(max(1, min(limit, 500)))
+        .all()
+    )
+

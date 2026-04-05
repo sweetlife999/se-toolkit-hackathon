@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -29,3 +31,15 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class UserHistoryOut(BaseModel):
+    id: int
+    event_type: str
+    message: str
+    balance_delta: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+

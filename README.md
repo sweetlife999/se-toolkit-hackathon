@@ -13,6 +13,8 @@ Auth-first release baseline for VibErrands, now extended with the first task lif
 - Protected endpoint: get current user profile
 - Frontend pages: register, login, profile, logout
 - User balances, task rewards, task cancellation, and separate tasks database
+- Profile history panel with filters and admin balance/task audit lines
+- Admin panel for task removal and balance management
 
 ## Project structure
 - `backend/` FastAPI service
@@ -73,3 +75,4 @@ Frontend runs at `http://localhost:5173` and expects backend at `http://localhos
 - `DATABASE_URL` points to the auth database
 - `TASKS_DATABASE_URL` points to the tasks database
 - `VITE_API_BASE_URL` controls frontend API calls
+- `ADMIN_PASSWORD` protects admin actions in the profile admin panel

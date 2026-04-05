@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str
     tasks_database_url: Optional[str] = None
     jwt_secret_key: str
+    admin_password: str = "change-me-admin-password"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     cors_origins: str = "http://localhost:5173"

@@ -24,6 +24,7 @@ sudo DOMAIN=10.93.26.73 \
   PUBLIC_ORIGIN=http://10.93.26.73 \
   CORS_ORIGINS=http://10.93.26.73 \
   JWT_SECRET_KEY='replace-with-strong-random-secret' \
+  ADMIN_PASSWORD='replace-admin-password' \
   DB_PASSWORD='replace-db-password' \
   bash deploy/vm/deploy.sh
 ```
@@ -42,6 +43,7 @@ sudo ENABLE_TLS=true \
   PUBLIC_ORIGIN=https://api.your-domain.com \
   CORS_ORIGINS=https://api.your-domain.com \
   JWT_SECRET_KEY='replace-with-strong-random-secret' \
+  ADMIN_PASSWORD='replace-admin-password' \
   DB_PASSWORD='replace-db-password' \
   bash deploy/vm/deploy.sh
 ```
@@ -74,6 +76,7 @@ sudo systemctl restart viberrands-auth
 - `DB_USER` default: `postgres`
 - `DB_PASSWORD` default: `postgres`
 - `JWT_SECRET_KEY` default: `change-me-in-env`
+- `ADMIN_PASSWORD` default: `change-me-admin-password`
 - `ACCESS_TOKEN_EXPIRE_MINUTES` default: `60`
 - `WORKERS` default: `2`
 - `ENABLE_TLS` default: `false`
