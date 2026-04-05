@@ -9,9 +9,42 @@ function apiUrl(path) {
 async function parseError(response, fallbackMessage) {
   const contentType = response.headers.get("content-type") || "";
 
+  function formatDetail(detail) {
+    if (typeof detail === "string") {
+      return detail;
+    }
+
+    if (Array.isArray(detail)) {
+      return detail
+        .map((item) => {
+          if (typeof item === "string") {
+            return item;
+          }
+
+          if (item && typeof item === "object") {
+            const path = Array.isArray(item.loc)
+              ? item.loc.filter((part) => part !== "body").join(".")
+              : "";
+            const message = typeof item.msg === "string" ? item.msg : "Invalid value";
+            return path ? `${path}: ${message}` : message;
+          }
+
+          return String(item);
+        })
+        .filter(Boolean)
+        .join("; ");
+    }
+
+    if (detail && typeof detail === "object") {
+      return typeof detail.msg === "string" ? detail.msg : "";
+    }
+
+    return "";
+  }
+
   if (contentType.includes("application/json")) {
     const payload = await response.json();
-    return payload.detail || fallbackMessage;
+    return formatDetail(payload.detail) || payload.message || fallbackMessage;
   }
 
   const text = await response.text();
