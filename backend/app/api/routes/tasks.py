@@ -10,9 +10,9 @@ from sqlalchemy.orm import Session, selectinload
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.db.tasks_session import get_tasks_db
-from app.models.task import Tag, Task, TaskMode, TaskStatus
+from app.models.task import Tag, Task, TaskActivity, TaskMode, TaskStatus
 from app.models.user import User
-from app.schemas.task import TaskCreate, TaskOut
+from app.schemas.task import TaskActivityOut, TaskCreate, TaskOut
 
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -82,6 +82,44 @@ def _get_auth_user_or_404(auth_db: Session, user_id: int) -> User:
     return user
 
 
+def _record_activity(
+    db: Session,
+    *,
+    user_id: int,
+    task: Task,
+    event_type: str,
+    actor_username: str,
+    other_username: Optional[str] = None,
+    balance_delta: int = 0,
+) -> None:
+    db.add(
+        TaskActivity(
+            user_id=user_id,
+            task_id=task.id,
+            event_type=event_type,
+            task_title=(task.title or f"Task #{task.id}"),
+            actor_username=actor_username,
+            other_username=other_username,
+            balance_delta=balance_delta,
+        )
+    )
+
+
+def _history_event_types_for_category(category: str) -> List[str]:
+    category_map = {
+        "all": [],
+        "created": ["task_created"],
+        "taken": ["task_taken", "task_taken_by_you"],
+        "completed": ["task_completed", "task_completion_confirmed"],
+        "cancelled": ["task_cancelled"],
+    }
+
+    if category not in category_map:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown history category")
+
+    return category_map[category]
+
+
 @router.post("", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
 def create_task(
     payload: TaskCreate,
@@ -107,6 +145,15 @@ def create_task(
 
     tag_names = _normalize_tags(payload.tags)
     task.tags = [_ensure_tag(db, tag_name) for tag_name in tag_names]
+    db.flush()
+    _record_activity(
+        db,
+        user_id=current_user.id,
+        task=task,
+        event_type="task_created",
+        actor_username=current_user.telegram_username,
+        balance_delta=-int(task.reward),
+    )
     try:
         db.commit()
     except Exception as exc:
@@ -171,6 +218,22 @@ def list_given_tasks(
     return [_serialize_task(task, creator_telegram_username=username_map.get(task.creator_id)) for task in tasks]
 
 
+@router.get("/history", response_model=List[TaskActivityOut])
+def get_history(
+    limit: int = Query(default=100, ge=1, le=300),
+    category: str = Query(default="all"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_tasks_db),
+) -> List[TaskActivityOut]:
+    query = db.query(TaskActivity).filter(TaskActivity.user_id == current_user.id)
+
+    event_types = _history_event_types_for_category(category)
+    if event_types:
+        query = query.filter(TaskActivity.event_type.in_(event_types))
+
+    return query.order_by(TaskActivity.created_at.desc(), TaskActivity.id.desc()).limit(limit).all()
+
+
 @router.get("/{task_id}", response_model=TaskOut)
 def get_task(
     task_id: int,
@@ -198,8 +261,26 @@ def take_task(
     if task.status != TaskStatus.open:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only open tasks can be taken")
 
+    creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
+    creator_username = creator_username or f"#{task.creator_id}"
+
     task.status = TaskStatus.in_work
     task.assignee_id = current_user.id
+    _record_activity(
+        db,
+        user_id=task.creator_id,
+        task=task,
+        event_type="task_taken",
+        actor_username=current_user.telegram_username,
+    )
+    _record_activity(
+        db,
+        user_id=current_user.id,
+        task=task,
+        event_type="task_taken_by_you",
+        actor_username=current_user.telegram_username,
+        other_username=creator_username,
+    )
 
     try:
         db.commit()
@@ -252,6 +333,34 @@ def complete_task(
         raise HTTPException(status_code=500, detail="Could not reward assignee") from exc
 
     task = _get_task_or_404(db, task_id)
+    assignee_username = assignee.telegram_username
+    _record_activity(
+        db,
+        user_id=task.creator_id,
+        task=task,
+        event_type="task_completed",
+        actor_username=assignee_username,
+    )
+    _record_activity(
+        db,
+        user_id=task.creator_id,
+        task=task,
+        event_type="task_completion_confirmed",
+        actor_username=current_user.telegram_username,
+    )
+    _record_activity(
+        db,
+        user_id=assignee.id,
+        task=task,
+        event_type="task_completion_confirmed",
+        actor_username=current_user.telegram_username,
+        other_username=assignee_username,
+        balance_delta=int(task.reward),
+    )
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
     return _serialize_task(task, creator_telegram_username=creator_username)
 
@@ -273,6 +382,9 @@ def cancel_task(
 
     previous_status = task.status
     previous_assignee_id = task.assignee_id
+    previous_assignee_username = None
+    if previous_assignee_id is not None:
+        previous_assignee_username = auth_db.query(User.telegram_username).filter(User.id == previous_assignee_id).scalar()
 
     task.status = TaskStatus.cancelled
     task.assignee_id = None
@@ -293,6 +405,28 @@ def cancel_task(
         task.assignee_id = previous_assignee_id
         db.commit()
         raise HTTPException(status_code=500, detail="Could not refund reward") from exc
+
+    _record_activity(
+        db,
+        user_id=current_user.id,
+        task=task,
+        event_type="task_cancelled",
+        actor_username=current_user.telegram_username,
+        balance_delta=int(task.reward),
+    )
+    if previous_assignee_id is not None:
+        _record_activity(
+            db,
+            user_id=previous_assignee_id,
+            task=task,
+            event_type="task_cancelled",
+            actor_username=current_user.telegram_username,
+            other_username=previous_assignee_username,
+        )
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
 
     task = _get_task_or_404(db, task_id)
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()

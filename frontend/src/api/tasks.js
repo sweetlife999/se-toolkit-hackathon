@@ -159,6 +159,13 @@ export async function getGivenTasks() {
   return request("/tasks/given");
 }
 
+export async function getTaskHistory(limit = 100, category = "all") {
+  const params = new URLSearchParams();
+  params.set("limit", String(limit));
+  params.set("category", category);
+  return request(`/tasks/history?${params.toString()}`);
+}
+
 export async function createTask(payload) {
   return request("/tasks", {
     method: "POST",

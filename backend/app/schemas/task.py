@@ -51,4 +51,17 @@ class TaskListFilters(BaseModel):
     tag: Optional[str] = None
 
 
+class TaskActivityOut(BaseModel):
+    id: int
+    task_id: int
+    event_type: str
+    task_title: str
+    actor_username: str
+    other_username: Optional[str]
+    balance_delta: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 
