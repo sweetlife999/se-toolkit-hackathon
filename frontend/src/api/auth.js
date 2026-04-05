@@ -8,13 +8,89 @@ function apiUrl(path) {
 async function parseError(response, fallbackMessage) {
   const contentType = response.headers.get("content-type") || "";
 
+  function formatDetail(detail) {
+    const fieldLabel = {
+      username: "Telegram handle",
+      telegram_username: "Telegram handle",
+      password: "Password",
+    };
+
+    function toFriendlyMessage(path, message) {
+      const normalizedPath = path.split(".").filter(Boolean);
+      const fieldKey = normalizedPath[normalizedPath.length - 1] || "";
+      const field = fieldLabel[fieldKey] || "Field";
+      const lowerMsg = message.toLowerCase();
+
+      if (lowerMsg.includes("field required")) {
+        return `${field} is required.`;
+      }
+
+      if (lowerMsg.includes("at least") && lowerMsg.includes("characters")) {
+        return `${field} is too short.`;
+      }
+
+      if (lowerMsg.includes("string pattern")) {
+        return `${field} format is invalid.`;
+      }
+
+      if (lowerMsg.includes("input should be")) {
+        return `${field} has an invalid value.`;
+      }
+
+      return path ? `${field}: ${message}` : message;
+    }
+
+    if (typeof detail === "string") {
+      return { message: detail, issues: [] };
+    }
+
+    if (Array.isArray(detail)) {
+      const issues = detail
+        .map((item) => {
+          if (typeof item === "string") {
+            return item;
+          }
+
+          if (item && typeof item === "object") {
+            const path = Array.isArray(item.loc)
+              ? item.loc.filter((part) => part !== "body").join(".")
+              : "";
+            const message = typeof item.msg === "string" ? item.msg : "Invalid value";
+            return toFriendlyMessage(path, message);
+          }
+
+          return String(item);
+        })
+        .filter(Boolean);
+
+      return {
+        message: issues[0] || "Please review your input.",
+        issues,
+      };
+    }
+
+    if (detail && typeof detail === "object") {
+      const message = typeof detail.msg === "string" ? detail.msg : "";
+      return { message, issues: message ? [message] : [] };
+    }
+
+    return { message: "", issues: [] };
+  }
+
   if (contentType.includes("application/json")) {
     const payload = await response.json();
-    return payload.detail || fallbackMessage;
+    const formatted = formatDetail(payload.detail);
+    return {
+      message: formatted.message || payload.message || fallbackMessage,
+      issues: formatted.issues,
+    };
   }
 
   const text = await response.text();
-  return text || fallbackMessage;
+  return {
+    message: text || fallbackMessage,
+    issues: [],
+  };
 }
 
 export function getToken() {
@@ -37,8 +113,11 @@ export async function register(payload) {
   });
 
   if (!response.ok) {
-    const message = await parseError(response, "Registration failed");
-    throw new Error(message);
+    const parsed = await parseError(response, "Registration failed");
+    const message = parsed.issues.length > 0 ? "Please fix the fields below." : parsed.message;
+    const error = new Error(message);
+    error.issues = parsed.issues;
+    throw error;
   }
 
   return response.json();
@@ -56,8 +135,11 @@ export async function login(telegramUsername, password) {
   });
 
   if (!response.ok) {
-    const message = await parseError(response, "Login failed");
-    throw new Error(message);
+    const parsed = await parseError(response, "Login failed");
+    const message = parsed.issues.length > 0 ? "Please fix the fields below." : parsed.message;
+    const error = new Error(message);
+    error.issues = parsed.issues;
+    throw error;
   }
 
   return response.json();

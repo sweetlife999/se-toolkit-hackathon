@@ -7,11 +7,13 @@ export default function LoginPage() {
   const [telegramUsername, setTelegramUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [validationIssues, setValidationIssues] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setValidationIssues([]);
     setLoading(true);
 
     try {
@@ -19,7 +21,12 @@ export default function LoginPage() {
       setToken(data.access_token);
       navigate("/tasks");
     } catch (err) {
-      setError(err.message);
+      if (Array.isArray(err.issues) && err.issues.length > 0) {
+        setValidationIssues(err.issues);
+        setError("Please fix the fields below.");
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -49,6 +56,13 @@ export default function LoginPage() {
         />
 
         {error && <p className="error">{error}</p>}
+        {validationIssues.length > 0 && (
+          <ul className="error-list">
+            {validationIssues.map((issue, index) => (
+              <li key={`${issue}-${index}`}>{issue}</li>
+            ))}
+          </ul>
+        )}
 
         <button type="submit" disabled={loading}>
           {loading ? "Signing in..." : "Login"}
