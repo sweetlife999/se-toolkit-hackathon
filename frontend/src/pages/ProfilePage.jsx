@@ -6,6 +6,7 @@ import {
   adminDecrementUserBalance,
   adminIncrementAllBalances,
   adminIncrementUserBalance,
+  adminNotifyAll,
   adminRemoveAdmin,
   adminRemoveTask,
 } from "../api/admin";
@@ -33,6 +34,7 @@ export default function ProfilePage() {
   const [decUserHandle, setDecUserHandle] = useState("");
   const [decUserAmount, setDecUserAmount] = useState("");
   const [decComment, setDecComment] = useState("");
+  const [notifyAllMessage, setNotifyAllMessage] = useState("");
   const [addAdminHandle, setAddAdminHandle] = useState("");
   const [removeAdminHandle, setRemoveAdminHandle] = useState("");
   const [profileTab, setProfileTab] = useState("history");
@@ -286,6 +288,17 @@ export default function ProfilePage() {
     runAdminAction(
       () => adminAddAdmin({ user_handle: addAdminHandle.trim() }),
       `${addAdminHandle.trim()} is now an admin`
+    );
+  };
+
+  const onNotifyAll = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      async () => {
+        await adminNotifyAll({ message: notifyAllMessage.trim() });
+        setNotifyAllMessage("");
+      },
+      "Notification sent to everybody"
     );
   };
 
@@ -557,6 +570,21 @@ export default function ProfilePage() {
               />
               <button type="submit" disabled={adminLoading}>
                 Remove from admins
+              </button>
+            </form>
+
+            <form className="admin-action" onSubmit={onNotifyAll}>
+              <h3>Send everybody a notification</h3>
+              <textarea
+                rows="3"
+                value={notifyAllMessage}
+                onChange={(e) => setNotifyAllMessage(e.target.value)}
+                placeholder="Your message"
+                required
+              />
+              <small>Users will receive: Message from admins: &lt;your text&gt;</small>
+              <button type="submit" disabled={adminLoading}>
+                Send notification
               </button>
             </form>
           </div>

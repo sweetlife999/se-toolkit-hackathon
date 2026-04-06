@@ -25,6 +25,10 @@ class AdminManageAdminPayload(BaseModel):
     user_handle: str = Field(min_length=4, max_length=64, pattern=r"^@[A-Za-z0-9_]{3,63}$")
 
 
+class AdminNotifyAllPayload(BaseModel):
+    message: str = Field(min_length=1, max_length=300)
+
+
 class AdminActionResponse(BaseModel):
     detail: str
 

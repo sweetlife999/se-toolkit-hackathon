@@ -14,6 +14,7 @@ from app.schemas.admin import (
     AdminAdjustUserBalancePayload,
     AdminDecrementUserBalancePayload,
     AdminManageAdminPayload,
+    AdminNotifyAllPayload,
     AdminRemoveTaskPayload,
 )
 
@@ -211,4 +212,34 @@ def remove_admin(
     db.commit()
 
     return AdminActionResponse(detail=f"{payload.user_handle} has been removed from admins")
+
+
+@router.post("/notify-all", response_model=AdminActionResponse)
+def notify_all_users(
+    payload: AdminNotifyAllPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> AdminActionResponse:
+    _assert_admin(current_user)
+
+    users = db.query(User).all()
+    prefixed_message = f"Message from admins: {payload.message.strip()}"
+
+    for user in users:
+        _log_user_history(
+            db,
+            user_id=user.id,
+            event_type="admin_broadcast_message",
+            message=prefixed_message,
+            balance_delta=0,
+        )
+
+    try:
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Could not send notification to everybody") from exc
+
+    return AdminActionResponse(detail=f"Notification sent to {len(users)} users")
+
 

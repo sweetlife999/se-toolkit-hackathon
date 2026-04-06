@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: filter by tasks">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="feat: popup notifs" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -90,7 +88,7 @@
       <workItem from="1775305732033" duration="1000" />
       <workItem from="1775306074760" duration="87000" />
       <workItem from="1775336255126" duration="6831000" />
-      <workItem from="1775350440846" duration="21594000" />
+      <workItem from="1775350440846" duration="22753000" />
     </task>
     <task id="LOCAL-00001" summary="feat: experimental tasks">
       <option name="closed" value="true" />
@@ -236,7 +234,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775420226342</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="feat: popup notifs">
+      <option name="closed" value="true" />
+      <created>1775485891937</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1775485891937</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -271,7 +277,8 @@
     <MESSAGE value="feat: difficulties displayed" />
     <MESSAGE value="feat: autorefresh" />
     <MESSAGE value="fix: filter by tasks" />
-    <option name="LAST_COMMIT_MESSAGE" value="fix: filter by tasks" />
+    <MESSAGE value="feat: popup notifs" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: popup notifs" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

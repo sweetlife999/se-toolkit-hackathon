@@ -31,6 +31,7 @@ async function parseError(response, fallbackMessage) {
       task_id: "Task ID",
       amount: "Amount",
       message: "Message",
+      message_text: "Message",
       comment: "Comment",
     };
 
@@ -184,5 +185,9 @@ export function adminAddAdmin(payload) {
 
 export function adminRemoveAdmin(payload) {
   return post("/admin/remove-admin", payload, "Could not remove admin");
+}
+
+export function adminNotifyAll(payload) {
+  return post("/admin/notify-all", payload, "Could not send notification to everybody");
 }
 
