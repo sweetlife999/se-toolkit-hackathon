@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="feat: balance showing and logo">
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/ThemeToggle.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/theme.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/styles.css" afterDir="false" />
-    </list>
+    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: a bit more on dark mode" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -95,7 +88,7 @@
       <workItem from="1775305732033" duration="1000" />
       <workItem from="1775306074760" duration="87000" />
       <workItem from="1775336255126" duration="6831000" />
-      <workItem from="1775350440846" duration="24468000" />
+      <workItem from="1775350440846" duration="26637000" />
     </task>
     <task id="LOCAL-00001" summary="feat: experimental tasks">
       <option name="closed" value="true" />
@@ -273,7 +266,47 @@
       <option name="project" value="LOCAL" />
       <updated>1775486949968</updated>
     </task>
-    <option name="localTasksCounter" value="23" />
+    <task id="LOCAL-00023" summary="feat: changing themes">
+      <option name="closed" value="true" />
+      <created>1775489354387</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1775489354387</updated>
+    </task>
+    <task id="LOCAL-00024" summary="feat: filter by cost">
+      <option name="closed" value="true" />
+      <created>1775489960006</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1775489960006</updated>
+    </task>
+    <task id="LOCAL-00025" summary="fix: show handle, not id everywhere &amp; dark theme fix">
+      <option name="closed" value="true" />
+      <created>1775490522575</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1775490522575</updated>
+    </task>
+    <task id="LOCAL-00026" summary="fix: make everything follow color in dark mode">
+      <option name="closed" value="true" />
+      <created>1775490811998</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1775490811998</updated>
+    </task>
+    <task id="LOCAL-00027" summary="fix: a bit more on dark mode">
+      <option name="closed" value="true" />
+      <created>1775490872486</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1775490872486</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -291,7 +324,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat: experimental tasks" />
     <MESSAGE value="fix: deploy_auth.sh" />
     <MESSAGE value="feat: change frontend" />
     <MESSAGE value="fix: change task giver info" />
@@ -312,7 +344,12 @@
     <MESSAGE value="feat: admin message for admin panel" />
     <MESSAGE value="feat: deposit and withdrawal" />
     <MESSAGE value="feat: balance showing and logo" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: balance showing and logo" />
+    <MESSAGE value="feat: changing themes" />
+    <MESSAGE value="feat: filter by cost" />
+    <MESSAGE value="fix: show handle, not id everywhere &amp; dark theme fix" />
+    <MESSAGE value="fix: make everything follow color in dark mode" />
+    <MESSAGE value="fix: a bit more on dark mode" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: a bit more on dark mode" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

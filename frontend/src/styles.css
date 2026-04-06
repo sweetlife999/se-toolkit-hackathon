@@ -268,10 +268,24 @@ textarea:focus-visible {
 
 :root[data-theme="dark"] .theme-toggle {
   background: rgba(21, 34, 27, 0.94);
+  color: #effcf2;
+  border-color: rgba(68, 185, 122, 0.28);
 }
 
 :root[data-theme="dark"] .theme-toggle:hover {
-  background: rgba(32, 49, 39, 0.98);
+  background: rgba(44, 72, 56, 0.98);
+  border-color: rgba(68, 185, 122, 0.42);
+  box-shadow: 0 0 0 1px rgba(68, 185, 122, 0.16), 0 10px 22px rgba(0, 0, 0, 0.24);
+  transform: translateY(-1px);
+}
+
+:root[data-theme="dark"] button:hover {
+  box-shadow: 0 0 0 1px rgba(68, 185, 122, 0.16), 0 12px 24px rgba(0, 0, 0, 0.26);
+  transform: translateY(-1px);
+}
+
+:root[data-theme="dark"] button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(68, 185, 122, 0.16), 0 12px 24px rgba(0, 0, 0, 0.26);
 }
 
 .auth-wrapper {
