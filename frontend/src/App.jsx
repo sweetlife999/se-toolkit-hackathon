@@ -12,6 +12,7 @@ import WithdrawalPage from "./pages/WithdrawalPage";
 import { getToken } from "./api/auth";
 import NotificationCenter from "./components/NotificationCenter";
 import AuthTopBar from "./components/AuthTopBar";
+import ThemeToggle from "./components/ThemeToggle";
 
 function ProtectedRoute({ children }) {
   if (!getToken()) {
@@ -29,74 +30,77 @@ function ProtectedRoute({ children }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile/deposit"
-        element={
-          <ProtectedRoute>
-            <DepositPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile/withdrawal"
-        element={
-          <ProtectedRoute>
-            <WithdrawalPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tasks"
-        element={
-          <ProtectedRoute>
-            <TaskFeedPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tasks/new"
-        element={
-          <ProtectedRoute>
-            <TaskCreatePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tasks/taken"
-        element={
-          <ProtectedRoute>
-            <TakenTasksPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tasks/given"
-        element={
-          <ProtectedRoute>
-            <GivenTasksPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/tasks/:taskId"
-        element={
-          <ProtectedRoute>
-            <TaskDetailsPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="*" element={<Navigate to="/tasks" replace />} />
-    </Routes>
+    <>
+      <ThemeToggle />
+      <Routes>
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/deposit"
+          element={
+            <ProtectedRoute>
+              <DepositPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/withdrawal"
+          element={
+            <ProtectedRoute>
+              <WithdrawalPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute>
+              <TaskFeedPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks/new"
+          element={
+            <ProtectedRoute>
+              <TaskCreatePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks/taken"
+          element={
+            <ProtectedRoute>
+              <TakenTasksPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks/given"
+          element={
+            <ProtectedRoute>
+              <GivenTasksPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tasks/:taskId"
+          element={
+            <ProtectedRoute>
+              <TaskDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/tasks" replace />} />
+      </Routes>
+    </>
   );
 }
