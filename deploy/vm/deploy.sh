@@ -12,6 +12,7 @@ fi
 PROJECT_ROOT="${PROJECT_ROOT:-/opt/se-toolkit-hackathon}"
 BACKEND_DIR="${BACKEND_DIR:-${PROJECT_ROOT}/backend}"
 FRONTEND_DIR="${FRONTEND_DIR:-${PROJECT_ROOT}/frontend}"
+BOT_DIR="${BOT_DIR:-${PROJECT_ROOT}/bot}"
 DOMAIN="${DOMAIN:-10.93.26.73}"
 PUBLIC_ORIGIN="${PUBLIC_ORIGIN:-http://${DOMAIN}}"
 API_BASE_URL="${API_BASE_URL:-}"
@@ -26,6 +27,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES="${ACCESS_TOKEN_EXPIRE_MINUTES:-60}"
 WORKERS="${WORKERS:-2}"
 ENABLE_TLS="${ENABLE_TLS:-false}"
 LETSENCRYPT_EMAIL="${LETSENCRYPT_EMAIL:-}"
+TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
+TELEGRAM_BOT_SECRET="${TELEGRAM_BOT_SECRET:-change-me-bot-secret}"
+SITE_URL="${SITE_URL:-${PUBLIC_ORIGIN}}"
 
 if [[ ! -d "${PROJECT_ROOT}" ]]; then
   echo "Project root not found: ${PROJECT_ROOT}"
@@ -47,7 +51,7 @@ if [[ -z "${API_BASE_URL}" ]]; then
   API_BASE_URL="${PUBLIC_ORIGIN}/api"
 fi
 
-echo "[1/10] Installing OS dependencies"
+echo "[1/12] Installing OS dependencies"
 apt update
 apt install -y python3 python3-venv python3-pip nginx docker.io docker-compose-plugin curl ca-certificates gnupg
 systemctl enable --now docker
@@ -57,7 +61,7 @@ if ! command -v node >/dev/null 2>&1; then
   apt install -y nodejs
 fi
 
-echo "[2/10] Starting PostgreSQL container"
+echo "[2/12] Starting PostgreSQL container"
 cd "${PROJECT_ROOT}"
 docker compose up -d db
 
@@ -79,7 +83,7 @@ if ! docker compose exec -T db psql -U "${DB_USER}" -d postgres -tAc "SELECT 1 F
   docker compose exec -T db psql -U "${DB_USER}" -d postgres -c "CREATE DATABASE \"${TASKS_DB_NAME}\""
 fi
 
-echo "[3/10] Preparing backend virtual environment"
+echo "[3/12] Preparing backend virtual environment"
 cd "${BACKEND_DIR}"
 python3 -m venv .venv
 source .venv/bin/activate
@@ -87,7 +91,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 pip install gunicorn
 
-echo "[4/10] Writing production backend environment file"
+echo "[4/12] Writing production backend environment file"
 cat > "${BACKEND_DIR}/.env" <<EOF
 DATABASE_URL=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
 TASKS_DATABASE_URL=postgresql+psycopg2://${DB_USER}:${DB_PASSWORD}@localhost:5432/${TASKS_DB_NAME}
@@ -96,9 +100,12 @@ ADMIN_PASSWORD=${ADMIN_PASSWORD}
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
 CORS_ORIGINS=${CORS_ORIGINS}
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+TELEGRAM_BOT_SECRET=${TELEGRAM_BOT_SECRET}
+SITE_URL=${SITE_URL}
 EOF
 
-echo "[5/10] Installing systemd service"
+echo "[5/12] Installing backend systemd service"
 cat > /etc/systemd/system/viberrands-auth.service <<EOF
 [Unit]
 Description=VibErrands API
@@ -122,7 +129,7 @@ systemctl daemon-reload
 systemctl enable viberrands-auth
 systemctl restart viberrands-auth
 
-echo "[6/10] Building frontend"
+echo "[6/12] Building frontend"
 cd "${FRONTEND_DIR}"
 if [[ -f "package-lock.json" ]]; then
   npm ci
@@ -131,13 +138,13 @@ else
 fi
 VITE_API_BASE_URL="${API_BASE_URL}" npm run build
 
-echo "[7/10] Installing frontend assets"
+echo "[7/12] Installing frontend assets"
 rm -rf /var/www/viberrands
 mkdir -p /var/www/viberrands
 cp -r "${FRONTEND_DIR}/dist/." /var/www/viberrands/
 chown -R www-data:www-data /var/www/viberrands
 
-echo "[8/10] Installing Nginx full-stack config"
+echo "[8/12] Installing Nginx full-stack config"
 cat > /etc/nginx/sites-available/viberrands-auth <<EOF
 server {
     listen 80;
@@ -176,14 +183,14 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t
 systemctl reload nginx
 
-echo "[9/10] Configuring firewall"
+echo "[9/12] Configuring firewall"
 if command -v ufw >/dev/null 2>&1; then
   ufw allow OpenSSH || true
   ufw allow 'Nginx Full' || true
   ufw --force enable || true
 fi
 
-echo "[10/10] Optional TLS setup"
+echo "[10/12] Optional TLS setup"
 if [[ "${ENABLE_TLS}" == "true" ]]; then
   if [[ -z "${LETSENCRYPT_EMAIL}" ]]; then
     echo "ENABLE_TLS=true but LETSENCRYPT_EMAIL is empty"
@@ -193,9 +200,58 @@ if [[ "${ENABLE_TLS}" == "true" ]]; then
   certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos -m "${LETSENCRYPT_EMAIL}" --redirect
 fi
 
+echo "[11/12] Preparing Telegram bot"
+if [[ -d "${BOT_DIR}" && -f "${BOT_DIR}/requirements.txt" ]]; then
+  cd "${BOT_DIR}"
+  python3 -m venv .venv
+  .venv/bin/pip install --upgrade pip
+  .venv/bin/pip install -r requirements.txt
+
+  cat > "${BOT_DIR}/.env" <<EOF
+TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+TELEGRAM_BOT_SECRET=${TELEGRAM_BOT_SECRET}
+API_BASE_URL=http://127.0.0.1:8000
+SITE_URL=${SITE_URL}
+EOF
+
+  cat > /etc/systemd/system/viberrands-bot.service <<EOF
+[Unit]
+Description=VibErrands Telegram Bot
+After=network.target viberrands-auth.service
+Wants=viberrands-auth.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=${BOT_DIR}
+Environment=PATH=${BOT_DIR}/.venv/bin
+ExecStart=${BOT_DIR}/.venv/bin/python main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  systemctl daemon-reload
+  systemctl enable viberrands-bot
+
+  if [[ -n "${TELEGRAM_BOT_TOKEN}" ]]; then
+    systemctl restart viberrands-bot
+    echo "Telegram bot started."
+  else
+    echo "TELEGRAM_BOT_TOKEN is empty — bot service installed but not started."
+    echo "Set the token and run: systemctl start viberrands-bot"
+  fi
+else
+  echo "Bot directory not found at ${BOT_DIR} — skipping."
+fi
+
+echo "[12/12] Done."
 echo
 echo "Deployment complete."
-echo "Frontend: ${PUBLIC_ORIGIN}"
+echo "Frontend:     ${PUBLIC_ORIGIN}"
 echo "Health check: curl ${PUBLIC_ORIGIN}/health"
-echo "Service status: systemctl status viberrands-auth --no-pager"
+echo "API service:  systemctl status viberrands-auth --no-pager"
+echo "Bot service:  systemctl status viberrands-bot --no-pager"
 

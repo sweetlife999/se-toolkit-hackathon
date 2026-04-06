@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
     cors_origins: str = "http://localhost:5173"
+    telegram_bot_token: str = ""
+    telegram_bot_secret: str = "change-me-bot-secret"
+    site_url: str = "https://github.com/sweetlife999/se-toolkit-hackathon"
 
     @property
     def cors_origins_list(self) -> list[str]:

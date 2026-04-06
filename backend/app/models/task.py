@@ -84,5 +84,15 @@ class TaskActivity(TaskBase):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
+class TaskSubscription(TaskBase):
+    __tablename__ = "task_subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True, index=True)
+    # JSON arrays stored as text, e.g. '["python","react"]' or '[]' for any
+    tags: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="'[]'")
+    difficulties: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="'[]'")
+
+
 
 

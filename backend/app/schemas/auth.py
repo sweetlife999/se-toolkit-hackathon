@@ -25,6 +25,7 @@ class UserOut(BaseModel):
     is_admin: bool = False
     tasks_created: int = 0
     tasks_finished: int = 0
+    telegram_confirmed: bool = False
 
     model_config = {"from_attributes": True}
 
