@@ -15,6 +15,7 @@ async function parseError(response, fallbackMessage) {
       description: "Description",
       reward: "Reward",
       difficulty: "Difficulty",
+      min_reward: "Minimum reward",
       estimated_minutes: "Estimated time",
       mode: "Mode",
       tags: "Tags",
@@ -154,6 +155,10 @@ export async function getTasks(filters = {}) {
 
   if (filters.tag) {
     params.set("tag", filters.tag);
+  }
+
+  if (filters.minReward !== undefined && filters.minReward !== null && filters.minReward !== "") {
+    params.set("min_reward", String(filters.minReward));
   }
 
   const suffix = params.toString() ? `?${params.toString()}` : "";

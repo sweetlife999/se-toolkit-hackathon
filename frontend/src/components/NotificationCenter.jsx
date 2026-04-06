@@ -8,7 +8,8 @@ const AUTO_HIDE_MS = 7000;
 function formatTaskToast(task) {
   const title = task.title || `Task #${task.id}`;
   const difficulty = task.difficulty ? task.difficulty[0].toUpperCase() + task.difficulty.slice(1) : "Medium";
-  return `New tracked task: ${title} (${difficulty})`;
+  const reward = Number(task.reward ?? 0);
+  return `New tracked task: ${title} (${difficulty}, ${reward} pts)`;
 }
 
 function formatHistoryToast(entry) {
@@ -47,14 +48,17 @@ function normalizeTrackingSettings(raw) {
         .filter((value) => value === "easy" || value === "medium" || value === "hard")
     : [];
 
+  const minReward = Number(raw?.min_reward ?? 0);
+
   return {
     tags: Array.from(new Set(tags)),
     difficulties: Array.from(new Set(difficulties)),
+    min_reward: Number.isFinite(minReward) && minReward > 0 ? Math.floor(minReward) : 0,
   };
 }
 
 function isTrackedTask(task, tracking) {
-  const hasAnyFilter = tracking.tags.length > 0 || tracking.difficulties.length > 0;
+  const hasAnyFilter = tracking.tags.length > 0 || tracking.difficulties.length > 0 || tracking.min_reward > 0;
   if (!hasAnyFilter) {
     return false;
   }
@@ -66,15 +70,17 @@ function isTrackedTask(task, tracking) {
     : [];
 
   const taskDifficulty = (task.difficulty || "medium").toString().toLowerCase();
+  const taskReward = Number(task.reward ?? 0);
 
   const tagMatch = tracking.tags.length === 0 || tracking.tags.some((tag) => taskTags.includes(tag));
   const difficultyMatch = tracking.difficulties.length === 0 || tracking.difficulties.includes(taskDifficulty);
-  return tagMatch && difficultyMatch;
+  const rewardMatch = tracking.min_reward <= 0 || taskReward >= tracking.min_reward;
+  return tagMatch && difficultyMatch && rewardMatch;
 }
 
 export default function NotificationCenter() {
   const [toasts, setToasts] = useState([]);
-  const [tracking, setTracking] = useState({ tags: [], difficulties: [] });
+  const [tracking, setTracking] = useState({ tags: [], difficulties: [], min_reward: 0 });
 
   const seenTaskIdsRef = useRef(new Set());
   const seenHistoryIdsRef = useRef(new Set());
@@ -187,6 +193,7 @@ export default function NotificationCenter() {
     <div className="toast-stack" role="status" aria-live="polite" aria-atomic="false">
       <div className="toast-stack-meta">
         Tracking: {tracking.tags.length} tag(s), {tracking.difficulties.length} difficulty level(s)
+        {tracking.min_reward > 0 ? `, min reward ${tracking.min_reward}` : ""}
       </div>
       {toasts.map((toast) => (
         <div key={toast.id} className={`toast toast-${toast.kind}`}>

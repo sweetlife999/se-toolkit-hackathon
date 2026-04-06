@@ -148,9 +148,11 @@ def _safe_json_string_list(raw_value: Optional[str]) -> List[str]:
 def _get_or_create_task_subscription(db: Session, user_id: int) -> TaskSubscription:
     subscription = db.query(TaskSubscription).filter(TaskSubscription.user_id == user_id).first()
     if subscription is not None:
+        if getattr(subscription, "min_reward", None) is None:
+            subscription.min_reward = 0
         return subscription
 
-    subscription = TaskSubscription(user_id=user_id, tags="[]", difficulties="[]")
+    subscription = TaskSubscription(user_id=user_id, tags="[]", difficulties="[]", min_reward=0)
     db.add(subscription)
     db.flush()
     return subscription
@@ -163,12 +165,12 @@ def get_task_tracking_settings(
 ) -> TaskTrackingSettingsOut:
     subscription = db.query(TaskSubscription).filter(TaskSubscription.user_id == current_user.id).first()
     if subscription is None:
-        return TaskTrackingSettingsOut(tags=[], difficulties=[])
+        return TaskTrackingSettingsOut(tags=[], difficulties=[], min_reward=0)
 
     allowed_difficulties = {"easy", "medium", "hard"}
     tags = _safe_json_string_list(subscription.tags)
     difficulties = [value for value in _safe_json_string_list(subscription.difficulties) if value in allowed_difficulties]
-    return TaskTrackingSettingsOut(tags=tags, difficulties=difficulties)
+    return TaskTrackingSettingsOut(tags=tags, difficulties=difficulties, min_reward=max(0, int(subscription.min_reward or 0)))
 
 
 @router.put("/tracking", response_model=TaskTrackingSettingsOut)
@@ -191,6 +193,7 @@ def update_task_tracking_settings(
 
     subscription.tags = json.dumps(normalized_tags)
     subscription.difficulties = json.dumps(normalized_difficulties)
+    subscription.min_reward = max(0, int(payload.min_reward))
 
     try:
         db.commit()
@@ -198,7 +201,7 @@ def update_task_tracking_settings(
         db.rollback()
         raise HTTPException(status_code=500, detail="Could not save tracking settings") from exc
 
-    return TaskTrackingSettingsOut(tags=normalized_tags, difficulties=normalized_difficulties)
+    return TaskTrackingSettingsOut(tags=normalized_tags, difficulties=normalized_difficulties, min_reward=subscription.min_reward)
 
 
 @router.post("", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
@@ -263,6 +266,7 @@ def create_task(
 def list_tasks(
     mode: Optional[TaskMode] = Query(default=None),
     tag: Optional[str] = Query(default=None),
+    min_reward: Optional[int] = Query(default=None, ge=0),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_tasks_db),
     auth_db: Session = Depends(get_db),
@@ -274,6 +278,9 @@ def list_tasks(
 
     if tag:
         query = query.join(Task.tags).filter(func.lower(Tag.name) == tag.strip().lower())
+
+    if min_reward is not None:
+        query = query.filter(Task.reward >= min_reward)
 
     tasks = query.order_by(Task.created_at.desc()).distinct().all()
     username_map = _creator_username_map(auth_db, (task.creator_id for task in tasks))

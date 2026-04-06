@@ -10,7 +10,7 @@ import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -57,8 +57,9 @@ class BotConfirmRequest(BaseModel):
 class BotSubscribeRequest(BaseModel):
     telegram_chat_id: int
     telegram_username: str
-    tags: List[str] = []
-    difficulties: List[str] = []
+    tags: List[str] = Field(default_factory=list)
+    difficulties: List[str] = Field(default_factory=list)
+    min_reward: int = 0
 
 
 class BotTakeTaskRequest(BaseModel):
@@ -81,6 +82,7 @@ class BotSubscribeResponse(BaseModel):
 class BotSubscriptionsResponse(BaseModel):
     tags: List[str]
     difficulties: List[str]
+    min_reward: int
 
 
 # ---------------------------------------------------------------------------
@@ -172,11 +174,12 @@ def bot_subscribe(
 
     subscription = tasks_db.query(TaskSubscription).filter(TaskSubscription.user_id == user.id).first()
     if subscription is None:
-        subscription = TaskSubscription(user_id=user.id)
+        subscription = TaskSubscription(user_id=user.id, min_reward=0)
         tasks_db.add(subscription)
 
     subscription.tags = json.dumps(cleaned_tags)
     subscription.difficulties = json.dumps(cleaned_diffs)
+    subscription.min_reward = max(0, int(payload.min_reward))
 
     try:
         tasks_db.commit()
@@ -201,11 +204,12 @@ def bot_get_subscriptions(
 
     subscription = tasks_db.query(TaskSubscription).filter(TaskSubscription.user_id == user.id).first()
     if subscription is None:
-        return BotSubscriptionsResponse(tags=[], difficulties=[])
+        return BotSubscriptionsResponse(tags=[], difficulties=[], min_reward=0)
 
     return BotSubscriptionsResponse(
         tags=json.loads(subscription.tags or "[]"),
         difficulties=json.loads(subscription.difficulties or "[]"),
+        min_reward=max(0, int(getattr(subscription, "min_reward", 0) or 0)),
     )
 
 

@@ -56,16 +56,18 @@ export default function TaskFeedPage() {
   const [mode, setMode] = useState("");
   const [tag, setTag] = useState("");
   const [difficulty, setDifficulty] = useState("");
+  const [minReward, setMinReward] = useState(0);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [takingId, setTakingId] = useState(null);
+  const normalizedMinReward = Math.max(0, Number(minReward) || 0);
 
   const loadTasks = async (mountedRef) => {
     setError("");
     setLoading(true);
     try {
-      const data = await getTasks({ mode: mode || undefined, tag: tag || undefined });
+      const data = await getTasks({ mode: mode || undefined, tag: tag || undefined, minReward: normalizedMinReward });
       if (mountedRef.current) {
         setTasks(data);
       }
@@ -91,15 +93,17 @@ export default function TaskFeedPage() {
         !query || creator.includes(query) || title.includes(query) || description.includes(query) || tagMatch;
       const taskDifficulty = (task.difficulty || "medium").toLowerCase();
       const difficultyMatch = !difficulty || taskDifficulty === difficulty;
+      const rewardMatch = normalizedMinReward <= 0 || Number(task.reward || 0) >= normalizedMinReward;
 
-      return searchMatch && difficultyMatch;
+      return searchMatch && difficultyMatch && rewardMatch;
     });
-  }, [tasks, search, difficulty]);
+  }, [tasks, search, difficulty, normalizedMinReward]);
 
   const clearFilters = () => {
     setMode("");
     setTag("");
     setDifficulty("");
+    setMinReward(0);
     setSearch("");
   };
 
@@ -120,7 +124,7 @@ export default function TaskFeedPage() {
       mountedRef.current = false;
       window.removeEventListener("tasks:changed", onTasksChanged);
     };
-  }, [mode, tag]);
+  }, [mode, tag, normalizedMinReward]);
 
   const handleTake = async (taskId) => {
     setError("");
@@ -184,6 +188,34 @@ export default function TaskFeedPage() {
             placeholder="Search by title, description, creator or tag"
           />
         </label>
+
+        <div className="reward-filter">
+          <div className="reward-filter-head">
+            <span>Minimum reward</span>
+            <strong>{normalizedMinReward}</strong>
+          </div>
+          <div className="reward-filter-row">
+            <input
+              type="range"
+              min="0"
+              max="10000"
+              step="1"
+              value={normalizedMinReward}
+              onChange={(e) => setMinReward(Number(e.target.value))}
+              aria-label="Minimum reward slider"
+            />
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={normalizedMinReward}
+              onChange={(e) => setMinReward(Number(e.target.value))}
+              placeholder="0"
+              inputMode="numeric"
+              aria-label="Minimum reward value"
+            />
+          </div>
+        </div>
 
         <div className="filter-actions">
           <button type="button" className="secondary-button" onClick={clearFilters}>

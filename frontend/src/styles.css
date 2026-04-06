@@ -282,6 +282,36 @@ h1 {
   align-items: end;
 }
 
+.reward-filter {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.reward-filter-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-weight: 700;
+}
+
+.reward-filter-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.reward-filter input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.reward-filter input[type="number"] {
+  min-width: 0;
+}
+
 .tag-entry {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -750,6 +780,10 @@ h1 {
   }
 
   .tag-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .reward-filter-row {
     grid-template-columns: 1fr;
   }
 

@@ -112,9 +112,25 @@ def ensure_task_subscriptions_table(engine: Engine) -> None:
                     id SERIAL PRIMARY KEY,
                     user_id INTEGER NOT NULL UNIQUE,
                     tags TEXT NOT NULL DEFAULT '[]',
-                    difficulties TEXT NOT NULL DEFAULT '[]'
+                    difficulties TEXT NOT NULL DEFAULT '[]',
+                    min_reward INTEGER NOT NULL DEFAULT 0
                 )
                 """
             )
         )
+
+
+def ensure_task_subscriptions_min_reward_column(engine: Engine) -> None:
+    inspector = inspect(engine)
+    if "task_subscriptions" not in inspector.get_table_names():
+        return
+
+    column_names = {column["name"] for column in inspector.get_columns("task_subscriptions")}
+    if "min_reward" not in column_names:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE task_subscriptions ADD COLUMN min_reward INTEGER NOT NULL DEFAULT 0"))
+
+    with engine.begin() as connection:
+        connection.execute(text("UPDATE task_subscriptions SET min_reward = 0 WHERE min_reward IS NULL"))
+
 

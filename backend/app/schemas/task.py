@@ -51,6 +51,7 @@ class TaskOut(BaseModel):
 class TaskListFilters(BaseModel):
     mode: Optional[TaskMode] = None
     tag: Optional[str] = None
+    min_reward: Optional[int] = Field(default=None, ge=0)
 
 
 class TaskActivityOut(BaseModel):
@@ -69,11 +70,13 @@ class TaskActivityOut(BaseModel):
 class TaskTrackingSettingsUpdate(BaseModel):
     tags: List[str] = Field(default_factory=list)
     difficulties: List[TaskDifficulty] = Field(default_factory=list)
+    min_reward: int = Field(default=0, ge=0)
 
 
 class TaskTrackingSettingsOut(BaseModel):
     tags: List[str] = Field(default_factory=list)
     difficulties: List[TaskDifficulty] = Field(default_factory=list)
+    min_reward: int = 0
 
 
 

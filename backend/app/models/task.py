@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Table, Text, func
+from sqlalchemy import Column, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Table, Text, func, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -92,6 +92,7 @@ class TaskSubscription(TaskBase):
     # JSON arrays stored as text, e.g. '["python","react"]' or '[]' for any
     tags: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="'[]'")
     difficulties: Mapped[str] = mapped_column(Text, nullable=False, default="[]", server_default="'[]'")
+    min_reward: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default=text("0"))
 
 
 

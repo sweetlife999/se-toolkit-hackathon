@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const [removeAdminHandle, setRemoveAdminHandle] = useState("");
   const [profileTab, setProfileTab] = useState("history");
   const [trackingTagsInput, setTrackingTagsInput] = useState("");
+  const [trackingMinReward, setTrackingMinReward] = useState(0);
   const [trackingDifficulties, setTrackingDifficulties] = useState({
     easy: false,
     medium: false,
@@ -155,6 +156,7 @@ export default function ProfilePage() {
       );
 
       setTrackingTagsInput(tags.join(", "));
+      setTrackingMinReward(Number(result?.min_reward ?? 0));
       setTrackingDifficulties({
         easy: selected.has("easy"),
         medium: selected.has("medium"),
@@ -189,12 +191,13 @@ export default function ProfilePage() {
     const difficulties = ["easy", "medium", "hard"].filter((value) => trackingDifficulties[value]);
 
     try {
-      const result = await updateTrackingPreferences({ tags, difficulties });
+      const result = await updateTrackingPreferences({ tags, difficulties, min_reward: Number(trackingMinReward) || 0 });
       if (!mountedRef.current) {
         return;
       }
 
       setTrackingTagsInput((result.tags || []).join(", "));
+      setTrackingMinReward(Number(result?.min_reward ?? 0));
       const saved = new Set((result.difficulties || []).map((value) => String(value).toLowerCase()));
       setTrackingDifficulties({
         easy: saved.has("easy"),
@@ -666,7 +669,7 @@ export default function ProfilePage() {
             <div className="tracking-head">
               <h2>Tracked alerts</h2>
               <p className="muted">Get popup notifications for new tasks and fresh history events.</p>
-              <p className="muted">Add at least one tag or difficulty to enable new-task alerts.</p>
+              <p className="muted">Add tags, a difficulty, or set a minimum reward to enable new-task alerts.</p>
             </div>
 
             {trackingLoading ? (
@@ -681,6 +684,20 @@ export default function ProfilePage() {
                     placeholder="python, react, delivery"
                   />
                   <small>Use comma-separated tags. Leave empty to ignore tags.</small>
+                </label>
+
+                <label>
+                  Minimum reward
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={trackingMinReward}
+                    onChange={(e) => setTrackingMinReward(Number(e.target.value))}
+                    placeholder="0"
+                    inputMode="numeric"
+                  />
+                  <small>Track only tasks worth at least this amount.</small>
                 </label>
 
                 <fieldset className="difficulty-track-group">

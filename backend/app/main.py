@@ -14,6 +14,7 @@ from app.db.migrations import (
     ensure_task_reward_column,
     ensure_task_status_cancelled,
     ensure_task_subscriptions_table,
+    ensure_task_subscriptions_min_reward_column,
     ensure_telegram_columns,
     ensure_user_balance_column,
 )
@@ -43,6 +44,7 @@ def on_startup() -> None:
     ensure_task_difficulty_column(tasks_engine)
     ensure_task_status_cancelled(tasks_engine)
     ensure_task_subscriptions_table(tasks_engine)
+    ensure_task_subscriptions_min_reward_column(tasks_engine)
 
 
 @app.get("/health")
