@@ -138,8 +138,25 @@ async function post(path, payload, fallbackMessage) {
   return response.json();
 }
 
-export function verifyAdmin(payload) {
-  return post("/admin/verify", payload, "Could not verify admin credentials");
+async function get(path, fallbackMessage) {
+  const response = await fetch(apiUrl(path), {
+    method: "GET",
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    const parsed = await parseError(response, fallbackMessage);
+    const message = parsed.issues.length > 0 ? "Please fix the fields below." : parsed.message;
+    const error = new Error(message);
+    error.issues = parsed.issues;
+    throw error;
+  }
+
+  return response.json();
+}
+
+export function verifyAdmin() {
+  return get("/admin/verify", "Could not verify admin credentials");
 }
 
 export function adminRemoveTask(payload) {
@@ -159,5 +176,13 @@ export function adminIncrementAllBalances(payload) {
 
 export function adminDecrementUserBalance(payload) {
   return post("/admin/balance/decrement-user", payload, "Could not decrement user balance");
+}
+
+export function adminAddAdmin(payload) {
+  return post("/admin/add-admin", payload, "Could not add admin");
+}
+
+export function adminRemoveAdmin(payload) {
+  return post("/admin/remove-admin", payload, "Could not remove admin");
 }
 

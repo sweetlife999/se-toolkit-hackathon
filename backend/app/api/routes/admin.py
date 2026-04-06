@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import hmac
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
-from app.core.config import settings
 from app.db.session import get_db
 from app.db.tasks_session import get_tasks_db
 from app.models.task import Task, TaskStatus
@@ -15,8 +12,8 @@ from app.schemas.admin import (
     AdminActionResponse,
     AdminAdjustAllBalancesPayload,
     AdminAdjustUserBalancePayload,
-    AdminAuthPayload,
     AdminDecrementUserBalancePayload,
+    AdminManageAdminPayload,
     AdminRemoveTaskPayload,
 )
 
@@ -24,12 +21,9 @@ from app.schemas.admin import (
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-def _assert_admin_access(current_user: User, admin_handle: str, admin_password: str) -> None:
-    if current_user.telegram_username != admin_handle:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin handle must match your current account")
-
-    if not hmac.compare_digest(admin_password, settings.admin_password):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid admin password")
+def _assert_admin(current_user: User) -> None:
+    if not current_user.is_admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
 
 def _get_user_by_handle_or_404(db: Session, handle: str) -> User:
@@ -50,9 +44,9 @@ def _log_user_history(db: Session, *, user_id: int, event_type: str, message: st
     )
 
 
-@router.post("/verify", response_model=AdminActionResponse)
-def verify_admin(payload: AdminAuthPayload, current_user: User = Depends(get_current_user)) -> AdminActionResponse:
-    _assert_admin_access(current_user, payload.admin_handle, payload.admin_password)
+@router.get("/verify", response_model=AdminActionResponse)
+def verify_admin(current_user: User = Depends(get_current_user)) -> AdminActionResponse:
+    _assert_admin(current_user)
     return AdminActionResponse(detail="Admin access granted")
 
 
@@ -63,7 +57,7 @@ def remove_task_by_admin(
     auth_db: Session = Depends(get_db),
     tasks_db: Session = Depends(get_tasks_db),
 ) -> AdminActionResponse:
-    _assert_admin_access(current_user, payload.admin_handle, payload.admin_password)
+    _assert_admin(current_user)
 
     task = tasks_db.query(Task).filter(Task.id == payload.task_id).first()
     if task is None:
@@ -119,7 +113,7 @@ def increment_user_balance(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AdminActionResponse:
-    _assert_admin_access(current_user, payload.admin_handle, payload.admin_password)
+    _assert_admin(current_user)
 
     user = _get_user_by_handle_or_404(db, payload.user_handle)
     amount = int(payload.amount)
@@ -142,7 +136,7 @@ def increment_all_balances(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AdminActionResponse:
-    _assert_admin_access(current_user, payload.admin_handle, payload.admin_password)
+    _assert_admin(current_user)
 
     users = db.query(User).all()
     amount = int(payload.amount)
@@ -166,7 +160,7 @@ def decrement_user_balance(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> AdminActionResponse:
-    _assert_admin_access(current_user, payload.admin_handle, payload.admin_password)
+    _assert_admin(current_user)
 
     user = _get_user_by_handle_or_404(db, payload.user_handle)
     amount = int(payload.amount)
@@ -184,4 +178,37 @@ def decrement_user_balance(
     db.commit()
 
     return AdminActionResponse(detail="User balance decremented")
+
+
+@router.post("/add-admin", response_model=AdminActionResponse)
+def add_admin(
+    payload: AdminManageAdminPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> AdminActionResponse:
+    _assert_admin(current_user)
+
+    user = _get_user_by_handle_or_404(db, payload.user_handle)
+    user.is_admin = True
+    db.commit()
+
+    return AdminActionResponse(detail=f"{payload.user_handle} is now an admin")
+
+
+@router.post("/remove-admin", response_model=AdminActionResponse)
+def remove_admin(
+    payload: AdminManageAdminPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> AdminActionResponse:
+    _assert_admin(current_user)
+
+    user = _get_user_by_handle_or_404(db, payload.user_handle)
+    if user.telegram_username == "@DirectorOfSweetLife":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot remove @DirectorOfSweetLife from admin")
+
+    user.is_admin = False
+    db.commit()
+
+    return AdminActionResponse(detail=f"{payload.user_handle} has been removed from admins")
 

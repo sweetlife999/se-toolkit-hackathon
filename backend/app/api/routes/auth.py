@@ -22,6 +22,7 @@ def register(payload: UserRegister, db: Session = Depends(get_db)) -> User:
             telegram_username=payload.telegram_username,
             hashed_password=get_password_hash(payload.password),
             balance=0,
+            is_admin=payload.telegram_username == "@DirectorOfSweetLife",
         )
 
         db.add(user)
@@ -59,6 +60,7 @@ def me(current_user: User = Depends(get_current_user), tasks_db: Session = Depen
         id=current_user.id,
         telegram_username=current_user.telegram_username,
         balance=current_user.balance,
+        is_admin=current_user.is_admin,
         tasks_created=tasks_created,
         tasks_finished=tasks_finished,
     )

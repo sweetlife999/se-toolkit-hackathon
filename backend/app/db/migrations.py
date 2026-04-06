@@ -68,5 +68,18 @@ def ensure_task_status_cancelled(engine: Engine) -> None:
         )
 
 
+def ensure_is_admin_column(engine: Engine) -> None:
+    inspector = inspect(engine)
+    if "users" not in inspector.get_table_names():
+        return
 
+    column_names = {column["name"] for column in inspector.get_columns("users")}
+    if "is_admin" not in column_names:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT false"))
+
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE users SET is_admin = true WHERE telegram_username = '@DirectorOfSweetLife'")
+        )
 
