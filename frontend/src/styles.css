@@ -134,6 +134,47 @@ textarea:focus-visible {
   padding: 1rem 0 2rem;
 }
 
+.auth-global-topbar-wrap {
+  width: min(1100px, calc(100vw - 2rem));
+  margin: 0.75rem auto 0;
+}
+
+.auth-global-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 25px rgba(20, 33, 61, 0.08);
+}
+
+.brand-logo {
+  font-family: "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive;
+  font-size: 1.95rem;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: #b35b00;
+}
+
+.brand-logo:hover {
+  color: #d96f05;
+}
+
+.topbar-balance {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(42, 157, 143, 0.28);
+  background: rgba(42, 157, 143, 0.12);
+  color: #17675f;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .topbar {
   display: flex;
   align-items: flex-start;
@@ -642,6 +683,16 @@ h1 {
 }
 
 @media (max-width: 860px) {
+  .auth-global-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topbar-balance {
+    align-self: stretch;
+    justify-content: center;
+  }
+
   .topbar,
   .task-card-head {
     flex-direction: column;

@@ -11,6 +11,7 @@ import DepositPage from "./pages/DepositPage";
 import WithdrawalPage from "./pages/WithdrawalPage";
 import { getToken } from "./api/auth";
 import NotificationCenter from "./components/NotificationCenter";
+import AuthTopBar from "./components/AuthTopBar";
 
 function ProtectedRoute({ children }) {
   if (!getToken()) {
@@ -19,6 +20,7 @@ function ProtectedRoute({ children }) {
 
   return (
     <>
+      <AuthTopBar />
       {children}
       <NotificationCenter />
     </>
