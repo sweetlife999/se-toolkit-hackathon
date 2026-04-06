@@ -14,7 +14,7 @@ from app.db.session import get_db
 from app.db.tasks_session import get_tasks_db
 from app.models.task import Tag, Task, TaskActivity, TaskMode, TaskStatus, TaskSubscription
 from app.models.user import User
-from app.schemas.task import TaskActivityOut, TaskCreate, TaskOut
+from app.schemas.task import TaskActivityOut, TaskCreate, TaskOut, TaskTrackingSettingsOut, TaskTrackingSettingsUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +122,83 @@ def _history_event_types_for_category(category: str) -> List[str]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown history category")
 
     return category_map[category]
+
+
+def _safe_json_string_list(raw_value: Optional[str]) -> List[str]:
+    if not raw_value:
+        return []
+
+    try:
+        parsed = json.loads(raw_value)
+    except json.JSONDecodeError:
+        return []
+
+    if not isinstance(parsed, list):
+        return []
+
+    normalized: List[str] = []
+    for item in parsed:
+        if isinstance(item, str):
+            value = item.strip().lower()
+            if value:
+                normalized.append(value)
+    return normalized
+
+
+def _get_or_create_task_subscription(db: Session, user_id: int) -> TaskSubscription:
+    subscription = db.query(TaskSubscription).filter(TaskSubscription.user_id == user_id).first()
+    if subscription is not None:
+        return subscription
+
+    subscription = TaskSubscription(user_id=user_id, tags="[]", difficulties="[]")
+    db.add(subscription)
+    db.flush()
+    return subscription
+
+
+@router.get("/tracking", response_model=TaskTrackingSettingsOut)
+def get_task_tracking_settings(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_tasks_db),
+) -> TaskTrackingSettingsOut:
+    subscription = db.query(TaskSubscription).filter(TaskSubscription.user_id == current_user.id).first()
+    if subscription is None:
+        return TaskTrackingSettingsOut(tags=[], difficulties=[])
+
+    allowed_difficulties = {"easy", "medium", "hard"}
+    tags = _safe_json_string_list(subscription.tags)
+    difficulties = [value for value in _safe_json_string_list(subscription.difficulties) if value in allowed_difficulties]
+    return TaskTrackingSettingsOut(tags=tags, difficulties=difficulties)
+
+
+@router.put("/tracking", response_model=TaskTrackingSettingsOut)
+def update_task_tracking_settings(
+    payload: TaskTrackingSettingsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_tasks_db),
+) -> TaskTrackingSettingsOut:
+    subscription = _get_or_create_task_subscription(db, current_user.id)
+
+    normalized_tags = _normalize_tags(payload.tags)
+    normalized_difficulties: List[str] = []
+    seen_difficulties: Set[str] = set()
+    for difficulty in payload.difficulties:
+        value = difficulty.value
+        if value in seen_difficulties:
+            continue
+        seen_difficulties.add(value)
+        normalized_difficulties.append(value)
+
+    subscription.tags = json.dumps(normalized_tags)
+    subscription.difficulties = json.dumps(normalized_difficulties)
+
+    try:
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Could not save tracking settings") from exc
+
+    return TaskTrackingSettingsOut(tags=normalized_tags, difficulties=normalized_difficulties)
 
 
 @router.post("", response_model=TaskOut, status_code=status.HTTP_201_CREATED)

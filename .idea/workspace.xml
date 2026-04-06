@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="feat: autorefresh">
+    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: filter by tasks">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LoginPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LoginPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,7 +90,7 @@
       <workItem from="1775305732033" duration="1000" />
       <workItem from="1775306074760" duration="87000" />
       <workItem from="1775336255126" duration="6831000" />
-      <workItem from="1775350440846" duration="16366000" />
+      <workItem from="1775350440846" duration="21594000" />
     </task>
     <task id="LOCAL-00001" summary="feat: experimental tasks">
       <option name="closed" value="true" />
@@ -230,7 +228,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775416624350</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="fix: filter by tasks">
+      <option name="closed" value="true" />
+      <created>1775420226341</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1775420226342</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -264,7 +270,8 @@
     <MESSAGE value="feat: difficulties of tasks" />
     <MESSAGE value="feat: difficulties displayed" />
     <MESSAGE value="feat: autorefresh" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: autorefresh" />
+    <MESSAGE value="fix: filter by tasks" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: filter by tasks" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

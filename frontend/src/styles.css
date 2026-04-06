@@ -437,6 +437,76 @@ h1 {
   color: var(--success);
 }
 
+.profile-tabs {
+  display: inline-flex;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.22rem;
+}
+
+.tab-button {
+  border-radius: 999px;
+  padding: 0.52rem 0.9rem;
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid transparent;
+  font-weight: 700;
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-main);
+}
+
+.tab-button.active {
+  background: #fff;
+  border-color: var(--border);
+}
+
+.tracking-head {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.tracking-head h2 {
+  margin: 0;
+}
+
+.tracking-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.tracking-form small {
+  color: var(--muted);
+}
+
+.difficulty-track-group {
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.7rem 0.8rem;
+}
+
+.difficulty-track-group legend {
+  padding: 0 0.3rem;
+  font-weight: 700;
+}
+
+.difficulty-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-right: 1rem;
+  font-weight: 600;
+}
+
+.difficulty-check input {
+  width: auto;
+}
+
 .history-list {
   display: flex;
   flex-direction: column;
@@ -502,6 +572,64 @@ h1 {
   white-space: nowrap;
 }
 
+.toast-stack {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  width: min(380px, calc(100vw - 1.25rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  z-index: 1200;
+}
+
+.toast-stack-meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: right;
+  padding-right: 0.15rem;
+}
+
+.toast {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 28px rgba(20, 33, 61, 0.16);
+  padding: 0.7rem 0.75rem;
+}
+
+.toast p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.toast-task {
+  border-left: 4px solid var(--accent);
+}
+
+.toast-history {
+  border-left: 4px solid var(--success);
+}
+
+.toast-close {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1;
+  min-width: 1rem;
+}
+
+.toast-close:hover {
+  color: var(--text-main);
+  background: transparent;
+}
+
 @media (max-width: 860px) {
   .history-header {
     flex-direction: column;
@@ -531,6 +659,12 @@ h1 {
 
   .tag-entry {
     grid-template-columns: 1fr;
+  }
+
+  .toast-stack {
+    right: 0.7rem;
+    bottom: 0.7rem;
+    width: min(360px, calc(100vw - 1rem));
   }
 }
 

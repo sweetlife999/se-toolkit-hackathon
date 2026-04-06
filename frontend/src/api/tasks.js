@@ -119,6 +119,12 @@ function notifyTasksChanged() {
   }
 }
 
+function notifyTrackingChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("tracking:changed"));
+  }
+}
+
 async function request(path, options = {}) {
   const response = await fetch(apiUrl(path), {
     ...options,
@@ -171,6 +177,23 @@ export async function getTaskHistory(limit = 100, category = "all") {
   params.set("limit", String(limit));
   params.set("category", category);
   return request(`/tasks/history?${params.toString()}`);
+}
+
+export async function getTrackingPreferences() {
+  return request("/tasks/tracking");
+}
+
+export async function updateTrackingPreferences(payload) {
+  const result = await request("/tasks/tracking", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  notifyTrackingChanged();
+  return result;
 }
 
 export async function createTask(payload) {

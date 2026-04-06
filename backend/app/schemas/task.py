@@ -66,4 +66,14 @@ class TaskActivityOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class TaskTrackingSettingsUpdate(BaseModel):
+    tags: List[str] = Field(default_factory=list)
+    difficulties: List[TaskDifficulty] = Field(default_factory=list)
+
+
+class TaskTrackingSettingsOut(BaseModel):
+    tags: List[str] = Field(default_factory=list)
+    difficulties: List[TaskDifficulty] = Field(default_factory=list)
+
+
 

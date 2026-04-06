@@ -9,7 +9,7 @@ import {
   adminRemoveAdmin,
   adminRemoveTask,
 } from "../api/admin";
-import { getTaskHistory } from "../api/tasks";
+import { getTaskHistory, getTrackingPreferences, updateTrackingPreferences } from "../api/tasks";
 import { useTasksChangedRefresh } from "../hooks/useTasksChangedRefresh";
 
 export default function ProfilePage() {
@@ -35,6 +35,17 @@ export default function ProfilePage() {
   const [decComment, setDecComment] = useState("");
   const [addAdminHandle, setAddAdminHandle] = useState("");
   const [removeAdminHandle, setRemoveAdminHandle] = useState("");
+  const [profileTab, setProfileTab] = useState("history");
+  const [trackingTagsInput, setTrackingTagsInput] = useState("");
+  const [trackingDifficulties, setTrackingDifficulties] = useState({
+    easy: false,
+    medium: false,
+    hard: false,
+  });
+  const [trackingError, setTrackingError] = useState("");
+  const [trackingNotice, setTrackingNotice] = useState("");
+  const [trackingLoading, setTrackingLoading] = useState(true);
+  const [trackingSaving, setTrackingSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -115,6 +126,93 @@ export default function ProfilePage() {
 
   const refreshAfterAdminAction = async () => {
     await refreshProfile();
+  };
+
+  const loadTrackingSettings = useCallback(async () => {
+    setTrackingError("");
+    setTrackingLoading(true);
+    try {
+      const result = await getTrackingPreferences();
+      if (!mountedRef.current) {
+        return;
+      }
+
+      const tags = Array.isArray(result?.tags)
+        ? result.tags
+            .filter((value) => typeof value === "string")
+            .map((value) => value.trim().toLowerCase())
+            .filter(Boolean)
+        : [];
+
+      const selected = new Set(
+        Array.isArray(result?.difficulties)
+          ? result.difficulties
+              .filter((value) => typeof value === "string")
+              .map((value) => value.trim().toLowerCase())
+          : []
+      );
+
+      setTrackingTagsInput(tags.join(", "));
+      setTrackingDifficulties({
+        easy: selected.has("easy"),
+        medium: selected.has("medium"),
+        hard: selected.has("hard"),
+      });
+    } catch (err) {
+      if (mountedRef.current) {
+        setTrackingError(err?.message || "Could not load tracking settings");
+      }
+    } finally {
+      if (mountedRef.current) {
+        setTrackingLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    loadTrackingSettings();
+  }, [loadTrackingSettings]);
+
+  const onSaveTrackingSettings = async (e) => {
+    e.preventDefault();
+    setTrackingError("");
+    setTrackingNotice("");
+    setTrackingSaving(true);
+
+    const tags = trackingTagsInput
+      .split(",")
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+
+    const difficulties = ["easy", "medium", "hard"].filter((value) => trackingDifficulties[value]);
+
+    try {
+      const result = await updateTrackingPreferences({ tags, difficulties });
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setTrackingTagsInput((result.tags || []).join(", "));
+      const saved = new Set((result.difficulties || []).map((value) => String(value).toLowerCase()));
+      setTrackingDifficulties({
+        easy: saved.has("easy"),
+        medium: saved.has("medium"),
+        hard: saved.has("hard"),
+      });
+      setTrackingNotice("Tracking settings saved.");
+    } catch (err) {
+      if (mountedRef.current) {
+        if (Array.isArray(err.issues) && err.issues.length > 0) {
+          setTrackingError(err.issues[0]);
+        } else {
+          setTrackingError(err?.message || "Could not save tracking settings");
+        }
+      }
+    } finally {
+      if (mountedRef.current) {
+        setTrackingSaving(false);
+      }
+    }
   };
 
   const runAdminAction = async (action, successMessage) => {
@@ -466,44 +564,136 @@ export default function ProfilePage() {
       )}
 
       <section className="panel">
-        <div className="history-header">
-          <h2>History</h2>
-          <label className="history-filter">
-            <span>Filter</span>
-            <select value={historyCategory} onChange={(e) => setHistoryCategory(e.target.value)}>
-              <option value="all">All</option>
-              <option value="created">Created</option>
-              <option value="taken">Taken</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
+        <div className="profile-tabs" role="tablist" aria-label="Profile sections">
+          <button
+            type="button"
+            role="tab"
+            className={`tab-button ${profileTab === "history" ? "active" : ""}`}
+            aria-selected={profileTab === "history"}
+            onClick={() => setProfileTab("history")}
+          >
+            History
+          </button>
+          <button
+            type="button"
+            role="tab"
+            className={`tab-button ${profileTab === "tracking" ? "active" : ""}`}
+            aria-selected={profileTab === "tracking"}
+            onClick={() => setProfileTab("tracking")}
+          >
+            Tracked alerts
+          </button>
         </div>
-        {historyLoading ? (
-          <p className="muted">Loading history...</p>
-        ) : historyError ? (
-          <p className="error">{historyError}</p>
-        ) : history.length === 0 ? (
-          <p className="muted">No history events yet.</p>
-        ) : (
-          <div className="history-list">
-            {history.map((entry) => (
-              <div key={entry.uid || entry.id} className="history-row">
-                <span>{formatHistoryLine(entry)}</span>
-                <span className="history-meta">
-                  <span
-                    className={`history-delta ${
-                      entry.balance_delta > 0 ? "plus" : entry.balance_delta < 0 ? "minus" : "neutral"
-                    }`}
-                  >
-                    {formatDelta(entry.balance_delta)}
-                  </span>
-                  <span className="history-time">{formatHistoryTimestamp(entry.created_at)}</span>
-                </span>
+
+        {profileTab === "history" ? (
+          <>
+            <div className="history-header">
+              <h2>History</h2>
+              <label className="history-filter">
+                <span>Filter</span>
+                <select value={historyCategory} onChange={(e) => setHistoryCategory(e.target.value)}>
+                  <option value="all">All</option>
+                  <option value="created">Created</option>
+                  <option value="taken">Taken</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </label>
+            </div>
+            {historyLoading ? (
+              <p className="muted">Loading history...</p>
+            ) : historyError ? (
+              <p className="error">{historyError}</p>
+            ) : history.length === 0 ? (
+              <p className="muted">No history events yet.</p>
+            ) : (
+              <div className="history-list">
+                {history.map((entry) => (
+                  <div key={entry.uid || entry.id} className="history-row">
+                    <span>{formatHistoryLine(entry)}</span>
+                    <span className="history-meta">
+                      <span
+                        className={`history-delta ${
+                          entry.balance_delta > 0 ? "plus" : entry.balance_delta < 0 ? "minus" : "neutral"
+                        }`}
+                      >
+                        {formatDelta(entry.balance_delta)}
+                      </span>
+                      <span className="history-time">{formatHistoryTimestamp(entry.created_at)}</span>
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="tracking-head">
+              <h2>Tracked alerts</h2>
+              <p className="muted">Get popup notifications for new tasks and fresh history events.</p>
+              <p className="muted">Add at least one tag or difficulty to enable new-task alerts.</p>
+            </div>
+
+            {trackingLoading ? (
+              <p className="muted">Loading tracking settings...</p>
+            ) : (
+              <form className="tracking-form" onSubmit={onSaveTrackingSettings}>
+                <label>
+                  Tracked tags
+                  <input
+                    value={trackingTagsInput}
+                    onChange={(e) => setTrackingTagsInput(e.target.value)}
+                    placeholder="python, react, delivery"
+                  />
+                  <small>Use comma-separated tags. Leave empty to ignore tags.</small>
+                </label>
+
+                <fieldset className="difficulty-track-group">
+                  <legend>Tracked difficulties</legend>
+                  <label className="difficulty-check">
+                    <input
+                      type="checkbox"
+                      checked={trackingDifficulties.easy}
+                      onChange={(e) =>
+                        setTrackingDifficulties((current) => ({ ...current, easy: e.target.checked }))
+                      }
+                    />
+                    Easy
+                  </label>
+                  <label className="difficulty-check">
+                    <input
+                      type="checkbox"
+                      checked={trackingDifficulties.medium}
+                      onChange={(e) =>
+                        setTrackingDifficulties((current) => ({ ...current, medium: e.target.checked }))
+                      }
+                    />
+                    Medium
+                  </label>
+                  <label className="difficulty-check">
+                    <input
+                      type="checkbox"
+                      checked={trackingDifficulties.hard}
+                      onChange={(e) =>
+                        setTrackingDifficulties((current) => ({ ...current, hard: e.target.checked }))
+                      }
+                    />
+                    Hard
+                  </label>
+                </fieldset>
+
+                {trackingError && <p className="error">{trackingError}</p>}
+                {trackingNotice && <p className="admin-notice">{trackingNotice}</p>}
+
+                <div className="actions">
+                  <button type="submit" disabled={trackingSaving}>
+                    {trackingSaving ? "Saving..." : "Save tracking"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </>
         )}
       </section>
     </div>

@@ -8,9 +8,19 @@ import TaskFeedPage from "./pages/TaskFeedPage";
 import TakenTasksPage from "./pages/TakenTasksPage";
 import GivenTasksPage from "./pages/GivenTasksPage";
 import { getToken } from "./api/auth";
+import NotificationCenter from "./components/NotificationCenter";
 
 function ProtectedRoute({ children }) {
-  return getToken() ? children : <Navigate to="/login" replace />;
+  if (!getToken()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <>
+      {children}
+      <NotificationCenter />
+    </>
+  );
 }
 
 export default function App() {

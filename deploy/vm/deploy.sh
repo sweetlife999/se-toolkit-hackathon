@@ -249,9 +249,37 @@ fi
 
 echo "[12/12] Done."
 echo
+AUTH_STATUS="$(systemctl is-active viberrands-auth 2>/dev/null || true)"
+NGINX_STATUS="$(systemctl is-active nginx 2>/dev/null || true)"
+BOT_STATUS="not-installed"
+if systemctl list-unit-files viberrands-bot.service >/dev/null 2>&1; then
+  BOT_STATUS="$(systemctl is-active viberrands-bot 2>/dev/null || true)"
+fi
+
+HEALTH_URL="${PUBLIC_ORIGIN}/health"
+HEALTH_RESULT="unavailable"
+if curl -fsS --max-time 8 "${HEALTH_URL}" >/dev/null 2>&1; then
+  HEALTH_RESULT="ok"
+fi
+
 echo "Deployment complete."
-echo "Frontend:     ${PUBLIC_ORIGIN}"
-echo "Health check: curl ${PUBLIC_ORIGIN}/health"
-echo "API service:  systemctl status viberrands-auth --no-pager"
-echo "Bot service:  systemctl status viberrands-bot --no-pager"
+echo "Frontend URL:        ${PUBLIC_ORIGIN}"
+echo "API base URL:        ${API_BASE_URL}"
+echo "Health endpoint:     ${HEALTH_URL}"
+echo "Health status:       ${HEALTH_RESULT}"
+echo ""
+echo "Service status:"
+echo "- nginx:             ${NGINX_STATUS}"
+echo "- viberrands-auth:   ${AUTH_STATUS}"
+echo "- viberrands-bot:    ${BOT_STATUS}"
+echo ""
+echo "Databases:"
+echo "- auth db:           ${DB_NAME}"
+echo "- tasks db:          ${TASKS_DB_NAME}"
+echo ""
+echo "Useful commands:"
+echo "- systemctl status viberrands-auth --no-pager"
+echo "- systemctl status viberrands-bot --no-pager"
+echo "- journalctl -u viberrands-auth -n 120 --no-pager"
+echo "- curl -fsS ${HEALTH_URL}"
 
