@@ -7,6 +7,8 @@ import TaskDetailsPage from "./pages/TaskDetailsPage";
 import TaskFeedPage from "./pages/TaskFeedPage";
 import TakenTasksPage from "./pages/TakenTasksPage";
 import GivenTasksPage from "./pages/GivenTasksPage";
+import DepositPage from "./pages/DepositPage";
+import WithdrawalPage from "./pages/WithdrawalPage";
 import { getToken } from "./api/auth";
 import NotificationCenter from "./components/NotificationCenter";
 
@@ -33,6 +35,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/deposit"
+        element={
+          <ProtectedRoute>
+            <DepositPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/withdrawal"
+        element={
+          <ProtectedRoute>
+            <WithdrawalPage />
           </ProtectedRoute>
         }
       />

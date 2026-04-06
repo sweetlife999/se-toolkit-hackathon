@@ -399,6 +399,12 @@ export default function ProfilePage() {
           <Link className="secondary-link" to="/tasks/given">
             Given tasks
           </Link>
+          <Link className="secondary-link" to="/profile/deposit">
+            Deposit
+          </Link>
+          <Link className="secondary-link" to="/profile/withdrawal">
+            Withdrawal
+          </Link>
           {telegramProfileUrl && (
             <a className="secondary-link" href={telegramProfileUrl} target="_blank" rel="noreferrer">
               Open Telegram profile
