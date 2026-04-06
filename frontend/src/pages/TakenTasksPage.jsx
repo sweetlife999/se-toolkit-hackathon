@@ -4,7 +4,7 @@ import { getTakenTasks } from "../api/tasks";
 import { useTasksChangedRefresh } from "../hooks/useTasksChangedRefresh";
 
 function TakenTaskCard({ task }) {
-  const creatorLabel = task.creator_telegram_username || `#${task.creator_id}`;
+  const creatorLabel = task.creator_telegram_username || "Unknown";
   const difficultyLabel = task.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
 
   return (

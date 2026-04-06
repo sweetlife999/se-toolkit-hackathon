@@ -65,9 +65,27 @@ def _ensure_tag(db: Session, tag_name: str) -> Tag:
     return tag
 
 
-def _serialize_task(task: Task, creator_telegram_username: Optional[str] = None) -> TaskOut:
+def _user_username_map(auth_db: Session, user_ids: Iterable[Optional[int]]) -> Dict[int, str]:
+    unique_user_ids = {user_id for user_id in user_ids if user_id is not None}
+    if not unique_user_ids:
+        return {}
+
+    rows = auth_db.query(User.id, User.telegram_username).filter(User.id.in_(unique_user_ids)).all()
+    return {user_id: telegram_username for user_id, telegram_username in rows}
+
+
+def _serialize_task(
+    task: Task,
+    creator_telegram_username: Optional[str] = None,
+    assignee_telegram_username: Optional[str] = None,
+) -> TaskOut:
     task_out = TaskOut.model_validate(task)
-    return task_out.model_copy(update={"creator_telegram_username": creator_telegram_username})
+    return task_out.model_copy(
+        update={
+            "creator_telegram_username": creator_telegram_username,
+            "assignee_telegram_username": assignee_telegram_username,
+        }
+    )
 
 
 def _creator_username_map(auth_db: Session, creator_ids: Iterable[int]) -> Dict[int, str]:
@@ -284,7 +302,15 @@ def list_tasks(
 
     tasks = query.order_by(Task.created_at.desc()).distinct().all()
     username_map = _creator_username_map(auth_db, (task.creator_id for task in tasks))
-    return [_serialize_task(task, creator_telegram_username=username_map.get(task.creator_id)) for task in tasks]
+    assignee_map = _user_username_map(auth_db, (task.assignee_id for task in tasks))
+    return [
+        _serialize_task(
+            task,
+            creator_telegram_username=username_map.get(task.creator_id),
+            assignee_telegram_username=assignee_map.get(task.assignee_id or -1),
+        )
+        for task in tasks
+    ]
 
 
 @router.get("/taken", response_model=List[TaskOut])
@@ -295,7 +321,15 @@ def list_taken_tasks(
 ) -> List[TaskOut]:
     tasks = _task_query(db).filter(Task.assignee_id == current_user.id).order_by(Task.updated_at.desc()).all()
     username_map = _creator_username_map(auth_db, (task.creator_id for task in tasks))
-    return [_serialize_task(task, creator_telegram_username=username_map.get(task.creator_id)) for task in tasks]
+    assignee_map = _user_username_map(auth_db, (task.assignee_id for task in tasks))
+    return [
+        _serialize_task(
+            task,
+            creator_telegram_username=username_map.get(task.creator_id),
+            assignee_telegram_username=assignee_map.get(task.assignee_id or -1),
+        )
+        for task in tasks
+    ]
 
 
 @router.get("/given", response_model=List[TaskOut])
@@ -306,7 +340,15 @@ def list_given_tasks(
 ) -> List[TaskOut]:
     tasks = _task_query(db).filter(Task.creator_id == current_user.id).order_by(Task.updated_at.desc()).all()
     username_map = _creator_username_map(auth_db, (task.creator_id for task in tasks))
-    return [_serialize_task(task, creator_telegram_username=username_map.get(task.creator_id)) for task in tasks]
+    assignee_map = _user_username_map(auth_db, (task.assignee_id for task in tasks))
+    return [
+        _serialize_task(
+            task,
+            creator_telegram_username=username_map.get(task.creator_id),
+            assignee_telegram_username=assignee_map.get(task.assignee_id or -1),
+        )
+        for task in tasks
+    ]
 
 
 @router.get("/history", response_model=List[TaskActivityOut])
@@ -334,7 +376,8 @@ def get_task(
 ) -> TaskOut:
     task = _get_task_or_404(db, task_id)
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
-    return _serialize_task(task, creator_telegram_username=creator_username)
+    assignee_username = auth_db.query(User.telegram_username).filter(User.id == task.assignee_id).scalar() if task.assignee_id else None
+    return _serialize_task(task, creator_telegram_username=creator_username, assignee_telegram_username=assignee_username)
 
 
 @router.post("/{task_id}/take", response_model=TaskOut)
@@ -382,7 +425,7 @@ def take_task(
     task = _get_task_or_404(db, task_id)
     _notify_creator_task_taken_web(db, auth_db, task, current_user.telegram_username)
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
-    return _serialize_task(task, creator_telegram_username=creator_username)
+    return _serialize_task(task, creator_telegram_username=creator_username, assignee_telegram_username=current_user.telegram_username)
 
 
 @router.post("/{task_id}/complete", response_model=TaskOut)
@@ -454,7 +497,7 @@ def complete_task(
     except Exception:
         db.rollback()
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
-    return _serialize_task(task, creator_telegram_username=creator_username)
+    return _serialize_task(task, creator_telegram_username=creator_username, assignee_telegram_username=assignee_username)
 
 
 @router.post("/{task_id}/cancel", response_model=TaskOut)
@@ -522,7 +565,8 @@ def cancel_task(
 
     task = _get_task_or_404(db, task_id)
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
-    return _serialize_task(task, creator_telegram_username=creator_username)
+    assignee_username = auth_db.query(User.telegram_username).filter(User.id == task.assignee_id).scalar() if task.assignee_id else None
+    return _serialize_task(task, creator_telegram_username=creator_username, assignee_telegram_username=assignee_username)
 
 
 # ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import { getTasks, takeTask } from "../api/tasks";
 
 function TaskCard({ task, onTake, takingId }) {
   const isTaking = takingId === task.id;
-  const creatorLabel = task.creator_telegram_username || `#${task.creator_id}`;
+  const creatorLabel = task.creator_telegram_username || "Unknown";
   const difficultyLabel = task.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
 
   return (

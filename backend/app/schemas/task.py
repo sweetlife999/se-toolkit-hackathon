@@ -33,6 +33,7 @@ class TaskOut(BaseModel):
     id: int
     creator_id: int
     creator_telegram_username: Optional[str] = None
+    assignee_telegram_username: Optional[str] = None
     title: Optional[str]
     description: str
     reward: int

@@ -121,7 +121,8 @@ export default function TaskDetailsPage() {
   const canTake = task?.status === "open" && !isCreator;
   const canComplete = task?.status === "in_work" && isCreator;
   const canCancel = isCreator && (task?.status === "open" || task?.status === "in_work");
-  const creatorLabel = task?.creator_telegram_username || `#${task?.creator_id}`;
+  const creatorLabel = task?.creator_telegram_username || "Unknown";
+  const assigneeLabel = task?.assignee_telegram_username || "none";
   const difficultyLabel = task?.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
 
   return (
@@ -151,7 +152,7 @@ export default function TaskDetailsPage() {
             <span>Reward: {Number(task.reward)}</span>
             <span>Estimated: {task.estimated_minutes} min</span>
             <span>Creator: {creatorLabel}</span>
-            {task.assignee_id ? <span>Assignee: #{task.assignee_id}</span> : <span>Assignee: none</span>}
+            <span>Assignee: {assigneeLabel}</span>
           </div>
         </div>
 
