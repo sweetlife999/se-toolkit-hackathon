@@ -63,6 +63,7 @@ def me(current_user: User = Depends(get_current_user), tasks_db: Session = Depen
         is_admin=current_user.is_admin,
         tasks_created=tasks_created,
         tasks_finished=tasks_finished,
+        telegram_confirmed=current_user.telegram_confirmed,
     )
 
 

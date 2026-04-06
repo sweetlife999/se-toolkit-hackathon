@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import logging
 from typing import Dict, Iterable, List, Optional, Set
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -10,9 +12,11 @@ from sqlalchemy.orm import Session, selectinload
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.db.tasks_session import get_tasks_db
-from app.models.task import Tag, Task, TaskActivity, TaskMode, TaskStatus
+from app.models.task import Tag, Task, TaskActivity, TaskMode, TaskStatus, TaskSubscription
 from app.models.user import User
 from app.schemas.task import TaskActivityOut, TaskCreate, TaskOut
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -173,6 +177,8 @@ def create_task(
             db.rollback()
         raise HTTPException(status_code=500, detail="Could not reserve reward") from exc
 
+    task = _get_task_or_404(db, task.id)
+    _notify_subscribers_new_task(db, auth_db, task)
     return _serialize_task(_get_task_or_404(db, task.id), creator_telegram_username=current_user.telegram_username)
 
 
@@ -290,6 +296,7 @@ def take_task(
         raise HTTPException(status_code=500, detail="Could not take task") from exc
 
     task = _get_task_or_404(db, task_id)
+    _notify_creator_task_taken_web(db, auth_db, task, current_user.telegram_username)
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
     return _serialize_task(task, creator_telegram_username=creator_username)
 
@@ -432,6 +439,84 @@ def cancel_task(
     task = _get_task_or_404(db, task_id)
     creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
     return _serialize_task(task, creator_telegram_username=creator_username)
+
+
+# ---------------------------------------------------------------------------
+# Telegram notification helpers
+# ---------------------------------------------------------------------------
+
+def _notify_subscribers_new_task(tasks_db: Session, auth_db: Session, task: Task) -> None:
+    """Send notifications to users whose subscriptions match the new task."""
+    try:
+        from app.core.config import settings
+        from app.core.telegram_notify import callback_button, inline_keyboard, send_message, url_button
+
+        tag_names = {t.name.lower() for t in task.tags}
+        subscriptions = tasks_db.query(TaskSubscription).all()
+
+        for sub in subscriptions:
+            if sub.user_id == task.creator_id:
+                continue
+
+            sub_tags = json.loads(sub.tags or "[]")
+            sub_diffs = json.loads(sub.difficulties or "[]")
+
+            tag_match = not sub_tags or bool(tag_names & {t.lower() for t in sub_tags})
+            diff_match = not sub_diffs or task.difficulty.value in [d.lower() for d in sub_diffs]
+
+            if not (tag_match and diff_match):
+                continue
+
+            user = auth_db.query(User).filter(User.id == sub.user_id).first()
+            if user is None or not user.telegram_chat_id:
+                continue
+
+            task_title = task.title or f"Task #{task.id}"
+            diff_emoji = {"easy": "🟢", "medium": "🟡", "hard": "🔴"}.get(task.difficulty.value, "⚪")
+            tags_str = ", ".join(t.name for t in task.tags) if task.tags else "—"
+            text = (
+                f"🆕 <b>New task matching your preferences!</b>\n\n"
+                f"📋 <b>{task_title}</b>\n"
+                f"{diff_emoji} Difficulty: {task.difficulty.value}\n"
+                f"💰 Reward: {task.reward} pts\n"
+                f"🏷 Tags: {tags_str}\n"
+                f"⏱ Est. time: {task.estimated_minutes} min\n\n"
+                f"Would you like to take it?"
+            )
+            markup = inline_keyboard(
+                [
+                    [
+                        callback_button("✅ Accept", f"accept_{task.id}"),
+                        callback_button("❌ Decline", f"decline_{task.id}"),
+                    ]
+                ]
+            )
+            send_message(user.telegram_chat_id, text, reply_markup=markup)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to notify subscribers of new task: %s", exc)
+
+
+def _notify_creator_task_taken_web(tasks_db: Session, auth_db: Session, task: Task, taker_username: str) -> None:
+    """Notify the task creator via Telegram when the task is taken (from web or bot)."""
+    try:
+        from app.core.config import settings
+        from app.core.telegram_notify import inline_keyboard, send_message, url_button
+
+        creator = auth_db.query(User).filter(User.id == task.creator_id).first()
+        if creator is None or not creator.telegram_chat_id:
+            return
+
+        task_title = task.title or f"Task #{task.id}"
+        text = (
+            f"🔔 <b>Your task is now in work!</b>\n\n"
+            f"📋 <b>{task_title}</b>\n"
+            f"👤 Accepted by: {taker_username}\n\n"
+            f"Check the site for details."
+        )
+        markup = inline_keyboard([[url_button("🌐 View on site", settings.site_url)]])
+        send_message(creator.telegram_chat_id, text, reply_markup=markup)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("Failed to notify creator of task taken: %s", exc)
 
 
 

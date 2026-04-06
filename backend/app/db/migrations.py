@@ -83,3 +83,38 @@ def ensure_is_admin_column(engine: Engine) -> None:
             text("UPDATE users SET is_admin = true WHERE telegram_username = '@DirectorOfSweetLife'")
         )
 
+
+def ensure_telegram_columns(engine: Engine) -> None:
+    inspector = inspect(engine)
+    if "users" not in inspector.get_table_names():
+        return
+
+    column_names = {column["name"] for column in inspector.get_columns("users")}
+    with engine.begin() as connection:
+        if "telegram_chat_id" not in column_names:
+            connection.execute(text("ALTER TABLE users ADD COLUMN telegram_chat_id BIGINT DEFAULT NULL"))
+        if "telegram_confirmed" not in column_names:
+            connection.execute(
+                text("ALTER TABLE users ADD COLUMN telegram_confirmed BOOLEAN NOT NULL DEFAULT false")
+            )
+
+
+def ensure_task_subscriptions_table(engine: Engine) -> None:
+    inspector = inspect(engine)
+    if "task_subscriptions" in inspector.get_table_names():
+        return
+
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                CREATE TABLE task_subscriptions (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL UNIQUE,
+                    tags TEXT NOT NULL DEFAULT '[]',
+                    difficulties TEXT NOT NULL DEFAULT '[]'
+                )
+                """
+            )
+        )
+

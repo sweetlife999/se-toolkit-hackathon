@@ -304,6 +304,33 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      <section className="panel">
+        <h2>Telegram Bot</h2>
+        {user?.telegram_confirmed ? (
+          <p>✅ <strong>Username confirmed!</strong> Your Telegram account is linked.</p>
+        ) : (
+          <>
+            <p>
+              Link your Telegram account to earn <strong>+50 points</strong> and receive task
+              notifications directly in the bot.
+            </p>
+            <p>
+              Press a button in the bot using the link below, then tap <strong>"✅ Confirm username"</strong>.
+            </p>
+            <div className="actions">
+              <a
+                className="secondary-link"
+                href="https://github.com/sweetlife999/se-toolkit-hackathon"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Confirm your username →
+              </a>
+            </div>
+          </>
+        )}
+      </section>
+
       {adminPanelOpen && user?.is_admin && (
         <section className="panel">
           <h2>Admin panel</h2>
