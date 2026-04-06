@@ -121,6 +121,9 @@ textarea::placeholder {
 :root[data-theme="dark"] .tab-button:hover {
   background: rgba(44, 72, 56, 0.95);
   color: #effcf2;
+  border-color: rgba(68, 185, 122, 0.4);
+  box-shadow: 0 0 0 1px rgba(68, 185, 122, 0.16), 0 10px 22px rgba(0, 0, 0, 0.24);
+  transform: translateY(-1px);
 }
 
 :root[data-theme="dark"] .tab-button.active {
