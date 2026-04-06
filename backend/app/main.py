@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.models.user import Base
 from app.db.session import engine
 from app.db.migrations import (
+    ensure_is_admin_column,
     ensure_task_difficulty_column,
     ensure_task_reward_column,
     ensure_task_status_cancelled,
@@ -33,6 +34,7 @@ def on_startup() -> None:
     Base.metadata.create_all(bind=engine)
     TaskBase.metadata.create_all(bind=tasks_engine)
     ensure_user_balance_column(engine)
+    ensure_is_admin_column(engine)
     ensure_task_reward_column(tasks_engine)
     ensure_task_difficulty_column(tasks_engine)
     ensure_task_status_cancelled(tasks_engine)

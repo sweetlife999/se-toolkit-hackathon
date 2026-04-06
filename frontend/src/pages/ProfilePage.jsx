@@ -2,11 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { clearToken, fetchMe, getUserHistory } from "../api/auth";
 import {
+  adminAddAdmin,
   adminDecrementUserBalance,
   adminIncrementAllBalances,
   adminIncrementUserBalance,
+  adminRemoveAdmin,
   adminRemoveTask,
-  verifyAdmin,
 } from "../api/admin";
 import { getTaskHistory } from "../api/tasks";
 import { useTasksChangedRefresh } from "../hooks/useTasksChangedRefresh";
@@ -20,9 +21,6 @@ export default function ProfilePage() {
   const [historyCategory, setHistoryCategory] = useState("all");
   const [historyLoading, setHistoryLoading] = useState(true);
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
-  const [adminHandle, setAdminHandle] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [adminError, setAdminError] = useState("");
   const [adminValidationIssues, setAdminValidationIssues] = useState([]);
   const [adminNotice, setAdminNotice] = useState("");
@@ -35,6 +33,8 @@ export default function ProfilePage() {
   const [decUserHandle, setDecUserHandle] = useState("");
   const [decUserAmount, setDecUserAmount] = useState("");
   const [decComment, setDecComment] = useState("");
+  const [addAdminHandle, setAddAdminHandle] = useState("");
+  const [removeAdminHandle, setRemoveAdminHandle] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -113,12 +113,6 @@ export default function ProfilePage() {
   const telegramHandle = (user?.telegram_username || "").replace(/^@/, "");
   const telegramProfileUrl = telegramHandle ? `https://t.me/${telegramHandle}` : null;
 
-  const withAdminAuth = (extra = {}) => ({
-    admin_handle: adminHandle.trim(),
-    admin_password: adminPassword,
-    ...extra,
-  });
-
   const refreshAfterAdminAction = async () => {
     await refreshProfile();
   };
@@ -144,21 +138,10 @@ export default function ProfilePage() {
     }
   };
 
-  const onVerifyAdmin = (e) => {
-    e.preventDefault();
-    runAdminAction(
-      async () => {
-        await verifyAdmin(withAdminAuth());
-        setAdminUnlocked(true);
-      },
-      "Admin access granted"
-    );
-  };
-
   const onRemoveTask = (e) => {
     e.preventDefault();
     runAdminAction(
-      () => adminRemoveTask(withAdminAuth({ task_id: Number(removeTaskId) })),
+      () => adminRemoveTask({ task_id: Number(removeTaskId) }),
       "Task removed"
     );
   };
@@ -167,12 +150,10 @@ export default function ProfilePage() {
     e.preventDefault();
     runAdminAction(
       () =>
-        adminIncrementUserBalance(
-          withAdminAuth({
-            user_handle: incUserHandle.trim(),
-            amount: Number(incUserAmount),
-          })
-        ),
+        adminIncrementUserBalance({
+          user_handle: incUserHandle.trim(),
+          amount: Number(incUserAmount),
+        }),
       "User balance incremented"
     );
   };
@@ -181,12 +162,10 @@ export default function ProfilePage() {
     e.preventDefault();
     runAdminAction(
       () =>
-        adminIncrementAllBalances(
-          withAdminAuth({
-            amount: Number(allAmount),
-            message: allMessage.trim(),
-          })
-        ),
+        adminIncrementAllBalances({
+          amount: Number(allAmount),
+          message: allMessage.trim(),
+        }),
       "All balances incremented"
     );
   };
@@ -195,14 +174,28 @@ export default function ProfilePage() {
     e.preventDefault();
     runAdminAction(
       () =>
-        adminDecrementUserBalance(
-          withAdminAuth({
-            user_handle: decUserHandle.trim(),
-            amount: Number(decUserAmount),
-            comment: decComment.trim(),
-          })
-        ),
+        adminDecrementUserBalance({
+          user_handle: decUserHandle.trim(),
+          amount: Number(decUserAmount),
+          comment: decComment.trim(),
+        }),
       "User balance decremented"
+    );
+  };
+
+  const onAddAdmin = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      () => adminAddAdmin({ user_handle: addAdminHandle.trim() }),
+      `${addAdminHandle.trim()} is now an admin`
+    );
+  };
+
+  const onRemoveAdmin = (e) => {
+    e.preventDefault();
+    runAdminAction(
+      () => adminRemoveAdmin({ user_handle: removeAdminHandle.trim() }),
+      `${removeAdminHandle.trim()} has been removed from admins`
     );
   };
 
@@ -303,39 +296,17 @@ export default function ProfilePage() {
           <button type="button" className="danger-button" onClick={onLogout}>
             Logout
           </button>
-          <button type="button" onClick={() => setAdminPanelOpen((current) => !current)}>
-            {adminPanelOpen ? "Close admin panel" : "Open admin panel"}
-          </button>
+          {user?.is_admin && (
+            <button type="button" onClick={() => setAdminPanelOpen((current) => !current)}>
+              {adminPanelOpen ? "Close admin panel" : "Open admin panel"}
+            </button>
+          )}
         </div>
       </section>
 
-      {adminPanelOpen && (
+      {adminPanelOpen && user?.is_admin && (
         <section className="panel">
           <h2>Admin panel</h2>
-          <form className="admin-grid" onSubmit={onVerifyAdmin}>
-            <label>
-              Your handle
-              <input
-                value={adminHandle}
-                onChange={(e) => setAdminHandle(e.target.value)}
-                placeholder="@admin_handle"
-                required
-              />
-            </label>
-            <label>
-              Admin password
-              <input
-                type="password"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="Admin password"
-                required
-              />
-            </label>
-            <button type="submit" disabled={adminLoading}>
-              {adminLoading ? "Checking..." : "Unlock"}
-            </button>
-          </form>
 
           {adminError && <p className="error">{adminError}</p>}
           {adminValidationIssues.length > 0 && (
@@ -347,99 +318,123 @@ export default function ProfilePage() {
           )}
           {adminNotice && <p className="admin-notice">{adminNotice}</p>}
 
-          {adminUnlocked && (
-            <div className="admin-actions-wrap">
-              <form className="admin-action" onSubmit={onRemoveTask}>
-                <h3>Remove task</h3>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={removeTaskId}
-                  onChange={(e) => setRemoveTaskId(e.target.value)}
-                  placeholder="Task ID"
-                  required
-                />
-                <button type="submit" disabled={adminLoading}>
-                  Remove task
-                </button>
-              </form>
+          <div className="admin-actions-wrap">
+            <form className="admin-action" onSubmit={onRemoveTask}>
+              <h3>Remove task</h3>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={removeTaskId}
+                onChange={(e) => setRemoveTaskId(e.target.value)}
+                placeholder="Task ID"
+                required
+              />
+              <button type="submit" disabled={adminLoading}>
+                Remove task
+              </button>
+            </form>
 
-              <form className="admin-action" onSubmit={onIncrementUser}>
-                <h3>Increment one user</h3>
-                <input
-                  value={incUserHandle}
-                  onChange={(e) => setIncUserHandle(e.target.value)}
-                  placeholder="@user_handle"
-                  required
-                />
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={incUserAmount}
-                  onChange={(e) => setIncUserAmount(e.target.value)}
-                  placeholder="Amount"
-                  required
-                />
-                <button type="submit" disabled={adminLoading}>
-                  Increment user
-                </button>
-              </form>
+            <form className="admin-action" onSubmit={onIncrementUser}>
+              <h3>Increment one user</h3>
+              <input
+                value={incUserHandle}
+                onChange={(e) => setIncUserHandle(e.target.value)}
+                placeholder="@user_handle"
+                required
+              />
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={incUserAmount}
+                onChange={(e) => setIncUserAmount(e.target.value)}
+                placeholder="Amount"
+                required
+              />
+              <button type="submit" disabled={adminLoading}>
+                Increment user
+              </button>
+            </form>
 
-              <form className="admin-action" onSubmit={onIncrementAll}>
-                <h3>Increment everybody</h3>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={allAmount}
-                  onChange={(e) => setAllAmount(e.target.value)}
-                  placeholder="Amount"
-                  required
-                />
-                <textarea
-                  rows="3"
-                  value={allMessage}
-                  onChange={(e) => setAllMessage(e.target.value)}
-                  placeholder="Message for everybody"
-                  required
-                />
-                <button type="submit" disabled={adminLoading}>
-                  Increment all
-                </button>
-              </form>
+            <form className="admin-action" onSubmit={onIncrementAll}>
+              <h3>Increment everybody</h3>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={allAmount}
+                onChange={(e) => setAllAmount(e.target.value)}
+                placeholder="Amount"
+                required
+              />
+              <textarea
+                rows="3"
+                value={allMessage}
+                onChange={(e) => setAllMessage(e.target.value)}
+                placeholder="Message for everybody"
+                required
+              />
+              <button type="submit" disabled={adminLoading}>
+                Increment all
+              </button>
+            </form>
 
-              <form className="admin-action" onSubmit={onDecrementUser}>
-                <h3>Decrement one user</h3>
-                <input
-                  value={decUserHandle}
-                  onChange={(e) => setDecUserHandle(e.target.value)}
-                  placeholder="@user_handle"
-                  required
-                />
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={decUserAmount}
-                  onChange={(e) => setDecUserAmount(e.target.value)}
-                  placeholder="Amount"
-                  required
-                />
-                <textarea
-                  rows="3"
-                  value={decComment}
-                  onChange={(e) => setDecComment(e.target.value)}
-                  placeholder="Comment"
-                  required
-                />
-                <button type="submit" disabled={adminLoading}>
-                  Decrement user
-                </button>
-              </form>
-            </div>
-          )}
+            <form className="admin-action" onSubmit={onDecrementUser}>
+              <h3>Decrement one user</h3>
+              <input
+                value={decUserHandle}
+                onChange={(e) => setDecUserHandle(e.target.value)}
+                placeholder="@user_handle"
+                required
+              />
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={decUserAmount}
+                onChange={(e) => setDecUserAmount(e.target.value)}
+                placeholder="Amount"
+                required
+              />
+              <textarea
+                rows="3"
+                value={decComment}
+                onChange={(e) => setDecComment(e.target.value)}
+                placeholder="Comment"
+                required
+              />
+              <button type="submit" disabled={adminLoading}>
+                Decrement user
+              </button>
+            </form>
+
+            <form className="admin-action" onSubmit={onAddAdmin}>
+              <h3>Make an admin</h3>
+              <input
+                value={addAdminHandle}
+                onChange={(e) => setAddAdminHandle(e.target.value)}
+                placeholder="@user_handle"
+                required
+              />
+              <button type="submit" disabled={adminLoading}>
+                Make an admin
+              </button>
+            </form>
+
+            <form className="admin-action" onSubmit={onRemoveAdmin}>
+              <h3>Remove from admins</h3>
+              <input
+                value={removeAdminHandle}
+                onChange={(e) => setRemoveAdminHandle(e.target.value)}
+                placeholder="@user_handle"
+                required
+              />
+              <button type="submit" disabled={adminLoading}>
+                Remove from admins
+              </button>
+            </form>
+          </div>
         </section>
       )}
 

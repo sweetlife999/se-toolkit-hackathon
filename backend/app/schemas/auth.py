@@ -22,6 +22,7 @@ class UserOut(BaseModel):
     id: int
     telegram_username: str
     balance: int
+    is_admin: bool = False
     tasks_created: int = 0
     tasks_finished: int = 0
 
