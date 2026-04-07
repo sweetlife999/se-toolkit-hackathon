@@ -30,6 +30,9 @@ async function parseError(response, fallbackMessage) {
       }
 
       if (lowerMsg.includes("string pattern")) {
+        if (fieldKey === "telegram_username" || fieldKey === "username") {
+          return "Telegram handle must start with @, then a letter, and contain only letters, numbers, or underscores.";
+        }
         return `${field} format is invalid.`;
       }
 
@@ -75,6 +78,13 @@ async function parseError(response, fallbackMessage) {
     }
 
     return { message: "", issues: [] };
+  }
+
+  if (response.status === 401) {
+    return {
+      message: "Invalid Telegram handle or password.",
+      issues: [],
+    };
   }
 
   if (contentType.includes("application/json")) {
@@ -178,4 +188,3 @@ export async function getUserHistory(limit = 120) {
 
   return response.json();
 }
-

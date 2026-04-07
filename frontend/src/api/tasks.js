@@ -241,3 +241,11 @@ export async function cancelTask(taskId) {
   return result;
 }
 
+export async function leaveTask(taskId) {
+  const result = await request(`/tasks/${taskId}/leave`, {
+    method: "POST",
+  });
+
+  notifyTasksChanged();
+  return result;
+}

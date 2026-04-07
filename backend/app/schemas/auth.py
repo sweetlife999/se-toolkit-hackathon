@@ -7,8 +7,8 @@ class UserRegister(BaseModel):
     telegram_username: str = Field(
         min_length=4,
         max_length=64,
-        pattern=r"^@[A-Za-z0-9_]{3,63}$",
-        description="Telegram handle starting with @",
+        pattern=r"^@[A-Za-z][A-Za-z0-9_]{2,62}$",
+        description="Telegram handle starting with @ and a letter",
     )
     password: str = Field(min_length=6, max_length=128)
 
@@ -43,5 +43,4 @@ class UserHistoryOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
-
 

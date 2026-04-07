@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import { getTakenTasks } from "../api/tasks";
 import { useTasksChangedRefresh } from "../hooks/useTasksChangedRefresh";
 
+function formatHours(estimatedMinutes) {
+  const totalMinutes = Number(estimatedMinutes || 0);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+    return "-";
+  }
+
+  const hours = totalMinutes / 60;
+  return Number.isInteger(hours) ? `${hours} h` : `${hours.toFixed(1)} h`;
+}
+
 function TakenTaskCard({ task }) {
   const creatorLabel = task.creator_telegram_username || "Unknown";
   const difficultyLabel = task.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
@@ -24,7 +34,7 @@ function TakenTaskCard({ task }) {
 
       <div className="task-meta">
         <span>Reward: {Number(task.reward)}</span>
-        <span>Time: {task.estimated_minutes} min</span>
+        <span>Time: {formatHours(task.estimated_minutes)}</span>
         <span>Creator: {creatorLabel}</span>
       </div>
 
@@ -119,4 +129,3 @@ export default function TakenTasksPage() {
     </div>
   );
 }
-

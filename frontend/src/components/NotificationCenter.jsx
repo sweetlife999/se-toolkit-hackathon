@@ -28,6 +28,8 @@ function formatHistoryToast(entry) {
       return `History update: completion confirmed for ${title}`;
     case "task_cancelled":
       return `History update: ${title} was cancelled`;
+    case "task_released":
+      return `History update: assignee left ${title}`;
     default:
       return `History update for ${title}`;
   }
@@ -206,4 +208,3 @@ export default function NotificationCenter() {
     </div>
   );
 }
-

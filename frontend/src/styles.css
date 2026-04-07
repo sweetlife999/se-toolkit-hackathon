@@ -23,12 +23,22 @@
   --muted: rgba(229, 245, 235, 0.72);
   --accent: #1f6b46;
   --accent-dark: #195238;
+  --link-color-dark: #88ddb1;
+  --link-color-dark-hover: #a8f2cd;
   --error: #ef476f;
   --success: #44b97a;
   --warning: #7bbf58;
   --border: rgba(153, 202, 173, 0.28);
   --focus-ring: rgba(68, 185, 122, 0.55);
   color-scheme: dark;
+}
+
+:root[data-theme="dark"] a {
+  color: var(--link-color-dark);
+}
+
+:root[data-theme="dark"] a:hover {
+  color: var(--link-color-dark-hover);
 }
 
 * {
@@ -447,6 +457,14 @@ h1 {
   align-items: center;
 }
 
+.reward-filter-scale {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding: 0 0.2rem;
+}
+
 .reward-filter input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
@@ -466,6 +484,7 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .chip {
@@ -478,6 +497,8 @@ h1 {
   color: var(--accent-dark);
   border: 1px solid rgba(247, 127, 0, 0.22);
   font-weight: 700;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .chip-static {
@@ -543,9 +564,20 @@ h1 {
   gap: 1rem;
 }
 
+.task-card-head > div {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.task-card-head .status {
+  flex-shrink: 0;
+}
+
 .task-card h2 {
   margin: 0.15rem 0 0;
   font-size: 1.2rem;
+  overflow-wrap: anywhere;
 }
 
 .task-description,

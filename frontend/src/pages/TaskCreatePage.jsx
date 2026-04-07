@@ -7,7 +7,7 @@ const EMPTY_TASK = {
   description: "",
   reward: "",
   difficulty: "medium",
-  estimatedMinutes: "",
+  estimatedHours: "",
   mode: "online",
 };
 
@@ -55,7 +55,7 @@ export default function TaskCreatePage() {
         description: form.description.trim(),
         reward: Number(form.reward),
         difficulty: form.difficulty,
-        estimated_minutes: Number(form.estimatedMinutes),
+        estimated_minutes: Math.max(1, Math.round(Number(form.estimatedHours) * 60)),
         mode: form.mode,
         tags,
       });
@@ -88,6 +88,10 @@ export default function TaskCreatePage() {
       </header>
 
       <form className="panel form-panel" onSubmit={onSubmit}>
+        <p className="muted">
+          To create a task, you need enough balance for the reward. A common demo flow is: register,
+          then confirm Telegram username (+50 points), then create task.
+        </p>
         <label>
           Title
           <input
@@ -134,14 +138,14 @@ export default function TaskCreatePage() {
           </label>
 
           <label>
-            Estimated minutes
+            Estimated hours
             <input
               type="number"
-              min="1"
-              step="1"
-              value={form.estimatedMinutes}
-              onChange={(e) => setForm({ ...form, estimatedMinutes: e.target.value })}
-              placeholder="30"
+              min="0.5"
+              step="0.5"
+              value={form.estimatedHours}
+              onChange={(e) => setForm({ ...form, estimatedHours: e.target.value })}
+              placeholder="1.5"
               required
             />
           </label>
@@ -208,4 +212,3 @@ export default function TaskCreatePage() {
     </div>
   );
 }
-

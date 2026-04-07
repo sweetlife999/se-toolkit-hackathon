@@ -5,14 +5,19 @@ VibErrands is a full-stack errand marketplace where users create tasks, reserve 
 ## What is implemented
 
 - JWT auth (`/auth/register`, `/auth/login`, `/auth/me`)
+- Telegram handle validation:
+  - must start with `@`
+  - first character after `@` must be a letter
+  - then letters, numbers, or underscores
 - Separate PostgreSQL databases:
   - auth DB (`users`, `user_history`)
   - tasks DB (`tasks`, `tags`, `task_activities`, `task_subscriptions`)
 - Task lifecycle:
   - create task (reward is reserved from creator balance)
   - take task
-  - complete task (reward goes to assignee)
-  - cancel task (reserved reward is refunded to creator)
+  - assignee can leave an in-work task (task returns to open)
+  - creator marks task done (reward goes to assignee)
+  - creator can cancel open/in-work task (reserved reward is refunded)
 - Task feed and dedicated pages:
   - open feed
   - taken tasks
@@ -33,9 +38,10 @@ VibErrands is a full-stack errand marketplace where users create tasks, reserve 
   - take task from bot
   - Telegram notifications for matching tasks and task-taking events
 - UI features:
-  - light/dark theme toggle
+  - light/dark theme toggle with improved dark contrast
   - bottom-right popup notifications
   - balance display and profile quick actions
+  - task ETA shown in hours (stored as minutes in backend)
 
 ## Stack
 
@@ -150,6 +156,7 @@ Backend (`backend/.env`):
 
 Frontend build/runtime:
 - `VITE_API_BASE_URL` - backend base URL used by frontend API calls
+- `VITE_TELEGRAM_BOT_URL` - optional direct Telegram bot/profile URL for username confirmation CTA
 
 ## API summary
 
@@ -170,6 +177,7 @@ Core routes:
   - `POST /tasks/{task_id}/take`
   - `POST /tasks/{task_id}/complete`
   - `POST /tasks/{task_id}/cancel`
+  - `POST /tasks/{task_id}/leave`
   - `GET /tasks/taken`
   - `GET /tasks/given`
   - `GET /tasks/history`

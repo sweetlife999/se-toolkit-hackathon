@@ -127,11 +127,22 @@ def _record_activity(
     )
 
 
+def _format_estimated_hours_label(estimated_minutes: int) -> str:
+    minutes = max(0, int(estimated_minutes or 0))
+    if minutes == 0:
+        return "-"
+
+    hours = minutes / 60
+    if float(hours).is_integer():
+        return f"{int(hours)} h"
+    return f"{hours:.1f} h"
+
+
 def _history_event_types_for_category(category: str) -> List[str]:
     category_map = {
         "all": [],
         "created": ["task_created"],
-        "taken": ["task_taken", "task_taken_by_you"],
+        "taken": ["task_taken", "task_taken_by_you", "task_released"],
         "completed": ["task_completed", "task_completion_confirmed"],
         "cancelled": ["task_cancelled"],
     }
@@ -569,6 +580,55 @@ def cancel_task(
     return _serialize_task(task, creator_telegram_username=creator_username, assignee_telegram_username=assignee_username)
 
 
+@router.post("/{task_id}/leave", response_model=TaskOut)
+def leave_task(
+    task_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_tasks_db),
+    auth_db: Session = Depends(get_db),
+) -> TaskOut:
+    task = _get_task_or_404(db, task_id)
+
+    if task.status != TaskStatus.in_work:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only in-work tasks can be left")
+
+    if task.assignee_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the current assignee can leave this task")
+
+    creator_username = auth_db.query(User.telegram_username).filter(User.id == task.creator_id).scalar()
+
+    task.status = TaskStatus.open
+    task.assignee_id = None
+    _record_activity(
+        db,
+        user_id=task.creator_id,
+        task=task,
+        event_type="task_released",
+        actor_username=current_user.telegram_username,
+    )
+    _record_activity(
+        db,
+        user_id=current_user.id,
+        task=task,
+        event_type="task_released",
+        actor_username=current_user.telegram_username,
+        other_username=creator_username,
+    )
+
+    try:
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Could not leave task") from exc
+
+    task = _get_task_or_404(db, task_id)
+    return _serialize_task(
+        task,
+        creator_telegram_username=creator_username,
+        assignee_telegram_username=None,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Telegram notification helpers
 # ---------------------------------------------------------------------------
@@ -602,13 +662,14 @@ def _notify_subscribers_new_task(tasks_db: Session, auth_db: Session, task: Task
             task_title = task.title or f"Task #{task.id}"
             diff_emoji = {"easy": "🟢", "medium": "🟡", "hard": "🔴"}.get(task.difficulty.value, "⚪")
             tags_str = ", ".join(t.name for t in task.tags) if task.tags else "—"
+            estimated_label = _format_estimated_hours_label(task.estimated_minutes)
             text = (
                 f"🆕 <b>New task matching your preferences!</b>\n\n"
                 f"📋 <b>{task_title}</b>\n"
                 f"{diff_emoji} Difficulty: {task.difficulty.value}\n"
                 f"💰 Reward: {task.reward} pts\n"
                 f"🏷 Tags: {tags_str}\n"
-                f"⏱ Est. time: {task.estimated_minutes} min\n\n"
+                f"⏱ Est. time: {estimated_label}\n\n"
                 f"Would you like to take it?"
             )
             markup = inline_keyboard(

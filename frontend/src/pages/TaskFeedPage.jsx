@@ -2,6 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getTasks, takeTask } from "../api/tasks";
 
+function formatHours(estimatedMinutes) {
+  const totalMinutes = Number(estimatedMinutes || 0);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+    return "-";
+  }
+
+  const hours = totalMinutes / 60;
+  return Number.isInteger(hours) ? `${hours} h` : `${hours.toFixed(1)} h`;
+}
+
 function TaskCard({ task, onTake, takingId }) {
   const isTaking = takingId === task.id;
   const creatorLabel = task.creator_telegram_username || "Unknown";
@@ -24,7 +34,7 @@ function TaskCard({ task, onTake, takingId }) {
 
       <div className="task-meta">
         <span>Reward: {Number(task.reward)}</span>
-        <span>Time: {task.estimated_minutes} min</span>
+        <span>Time: {formatHours(task.estimated_minutes)}</span>
         <span>Creator: {creatorLabel}</span>
       </div>
 
@@ -215,6 +225,10 @@ export default function TaskFeedPage() {
               aria-label="Minimum reward value"
             />
           </div>
+          <div className="reward-filter-scale">
+            <span>0</span>
+            <span>10000</span>
+          </div>
         </div>
 
         <div className="filter-actions">
@@ -244,4 +258,3 @@ export default function TaskFeedPage() {
     </div>
   );
 }
-
