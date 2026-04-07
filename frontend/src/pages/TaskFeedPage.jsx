@@ -180,7 +180,7 @@ export default function TaskFeedPage() {
 
         <label>
           Tag
-          <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Search by tag" />
+          <input value={tag} onChange={(e) => setTag(e.target.value)} />
         </label>
 
         <label>
@@ -195,11 +195,7 @@ export default function TaskFeedPage() {
 
         <label>
           Search
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title, description, creator or tag"
-          />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
 
         <div className="reward-filter">
