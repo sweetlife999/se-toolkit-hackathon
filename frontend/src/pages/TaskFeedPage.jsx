@@ -61,6 +61,9 @@ function TaskCard({ task, onTake, takingId }) {
 }
 
 export default function TaskFeedPage() {
+  const MIN_REWARD = 0;
+  const MAX_REWARD = 10000;
+
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [mode, setMode] = useState("");
@@ -71,7 +74,7 @@ export default function TaskFeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [takingId, setTakingId] = useState(null);
-  const normalizedMinReward = Math.max(0, Number(minReward) || 0);
+  const normalizedMinReward = Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(minReward) || 0));
 
   const loadTasks = async (mountedRef) => {
     setError("");
@@ -207,19 +210,20 @@ export default function TaskFeedPage() {
           <div className="reward-filter-row">
             <input
               type="range"
-              min="0"
-              max="10000"
+              min={MIN_REWARD}
+              max={MAX_REWARD}
               step="1"
               value={normalizedMinReward}
-              onChange={(e) => setMinReward(Number(e.target.value))}
+              onChange={(e) => setMinReward(Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(e.target.value) || 0)))}
               aria-label="Minimum reward slider"
             />
             <input
               type="number"
-              min="0"
+              min={MIN_REWARD}
+              max={MAX_REWARD}
               step="1"
               value={normalizedMinReward}
-              onChange={(e) => setMinReward(Number(e.target.value))}
+              onChange={(e) => setMinReward(Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(e.target.value) || 0)))}
               placeholder="0"
               inputMode="numeric"
               aria-label="Minimum reward value"

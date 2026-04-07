@@ -4,23 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="feat: update README.md">
+    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: TA feedback">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/api/routes/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/api/routes/tasks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/schemas/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/schemas/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app/schemas/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/app/schemas/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/auth.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/tasks.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/tasks.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/NotificationCenter.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/NotificationCenter.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/GivenTasksPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/GivenTasksPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LoginPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LoginPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/RegisterPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TakenTasksPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TakenTasksPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TaskCreatePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TaskCreatePage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TaskDetailsPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TaskDetailsPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TaskFeedPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TaskFeedPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/styles.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +92,7 @@
       <workItem from="1775336255126" duration="6831000" />
       <workItem from="1775350440846" duration="30501000" />
       <workItem from="1775560600017" duration="183000" />
-      <workItem from="1775560933207" duration="6140000" />
+      <workItem from="1775560933207" duration="8231000" />
     </task>
     <task id="LOCAL-00001" summary="feat: experimental tasks">
       <option name="closed" value="true" />
@@ -341,7 +326,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775562955273</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="fix: TA feedback">
+      <option name="closed" value="true" />
+      <created>1775593618521</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1775593618521</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -359,7 +352,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fix: change task giver info" />
     <MESSAGE value="feat: 2 sep pages for tasks" />
     <MESSAGE value="fix: display a useful msg when failing to create a task" />
     <MESSAGE value="fix: from prev commit, display mor user-friendly msg" />
@@ -384,7 +376,8 @@
     <MESSAGE value="fix: a bit more on dark mode" />
     <MESSAGE value="feat: animation on balance change" />
     <MESSAGE value="feat: update README.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: update README.md" />
+    <MESSAGE value="fix: TA feedback" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: TA feedback" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
