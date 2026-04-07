@@ -82,6 +82,14 @@ textarea {
   color: var(--text-main);
 }
 
+select {
+  min-height: 46px;
+  padding-top: 0.68rem;
+  padding-bottom: 0.68rem;
+  padding-right: 1.9rem;
+  line-height: 1.25;
+}
+
 
 input::placeholder,
 textarea::placeholder {
