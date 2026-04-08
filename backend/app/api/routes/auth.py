@@ -52,7 +52,7 @@ def me(current_user: User = Depends(get_current_user), tasks_db: Session = Depen
     tasks_created = tasks_db.query(Task).filter(Task.creator_id == current_user.id).count()
     tasks_finished = (
         tasks_db.query(Task)
-        .filter(Task.creator_id == current_user.id, Task.status == TaskStatus.done)
+        .filter(Task.assignee_id == current_user.id, Task.status == TaskStatus.done)
         .count()
     )
 
