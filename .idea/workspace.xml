@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="feat: animation on balance change">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+    <list default="true" id="48020644-4264-43f0-a575-b434bcb52775" name="Changes" comment="fix: polish frontend again">
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TaskFeedPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TaskFeedPage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/styles.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +93,8 @@
       <workItem from="1775336255126" duration="6831000" />
       <workItem from="1775350440846" duration="30501000" />
       <workItem from="1775560600017" duration="183000" />
-      <workItem from="1775560933207" duration="1991000" />
+      <workItem from="1775560933207" duration="8231000" />
+      <workItem from="1775601680832" duration="1570000" />
     </task>
     <task id="LOCAL-00001" summary="feat: experimental tasks">
       <option name="closed" value="true" />
@@ -319,7 +320,47 @@
       <option name="project" value="LOCAL" />
       <updated>1775498370324</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="feat: update README.md">
+      <option name="closed" value="true" />
+      <created>1775562955271</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1775562955273</updated>
+    </task>
+    <task id="LOCAL-00030" summary="fix: TA feedback">
+      <option name="closed" value="true" />
+      <created>1775593618521</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1775593618521</updated>
+    </task>
+    <task id="LOCAL-00031" summary="fix: polish frontend">
+      <option name="closed" value="true" />
+      <created>1775601923361</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1775601923361</updated>
+    </task>
+    <task id="LOCAL-00032" summary="fix: polish frontend">
+      <option name="closed" value="true" />
+      <created>1775602206029</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1775602206029</updated>
+    </task>
+    <task id="LOCAL-00033" summary="fix: polish frontend again">
+      <option name="closed" value="true" />
+      <created>1775602379624</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1775602379624</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -337,10 +378,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="feat: change frontend" />
-    <MESSAGE value="fix: change task giver info" />
-    <MESSAGE value="feat: 2 sep pages for tasks" />
-    <MESSAGE value="fix: display a useful msg when failing to create a task" />
     <MESSAGE value="fix: from prev commit, display mor user-friendly msg" />
     <MESSAGE value="feat: display errors for reg/login" />
     <MESSAGE value="fix: frontend -My- Taken tasks" />
@@ -362,7 +399,11 @@
     <MESSAGE value="fix: make everything follow color in dark mode" />
     <MESSAGE value="fix: a bit more on dark mode" />
     <MESSAGE value="feat: animation on balance change" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: animation on balance change" />
+    <MESSAGE value="feat: update README.md" />
+    <MESSAGE value="fix: TA feedback" />
+    <MESSAGE value="fix: polish frontend" />
+    <MESSAGE value="fix: polish frontend again" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: polish frontend again" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

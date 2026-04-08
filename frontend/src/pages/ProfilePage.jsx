@@ -126,6 +126,7 @@ export default function ProfilePage() {
 
   const telegramHandle = (user?.telegram_username || "").replace(/^@/, "");
   const telegramProfileUrl = telegramHandle ? `https://t.me/${telegramHandle}` : null;
+  const telegramConfirmUrl = import.meta.env.VITE_TELEGRAM_BOT_URL || "https://t.me/DirectorOfSweetLife";
 
   const refreshAfterAdminAction = async () => {
     await refreshProfile();
@@ -335,6 +336,8 @@ export default function ProfilePage() {
         return `${actor} confirmed the completion of ${entry.task_title}`;
       case "task_cancelled":
         return `${actor} cancelled task: ${entry.task_title}`;
+      case "task_released":
+        return `${actor} left task: ${entry.task_title}`;
       default:
         return `${actor} updated task: ${entry.task_title}`;
     }
@@ -440,11 +443,11 @@ export default function ProfilePage() {
             <div className="actions">
               <a
                 className="secondary-link"
-                href="https://github.com/sweetlife999/se-toolkit-hackathon"
+                href={telegramConfirmUrl}
                 target="_blank"
                 rel="noreferrer"
               >
-                Confirm your username →
+                Confirm your username in Telegram →
               </a>
             </div>
           </>

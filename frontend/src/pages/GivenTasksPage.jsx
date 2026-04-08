@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import { getGivenTasks } from "../api/tasks";
 import { useTasksChangedRefresh } from "../hooks/useTasksChangedRefresh";
 
+function formatHours(estimatedMinutes) {
+  const totalMinutes = Number(estimatedMinutes || 0);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+    return "-";
+  }
+
+  const hours = totalMinutes / 60;
+  return Number.isInteger(hours) ? `${hours} h` : `${hours.toFixed(1)} h`;
+}
+
 function GivenTaskCard({ task }) {
   const creatorHandle = task.creator_telegram_username ? task.creator_telegram_username.replace(/^@/, "") : "";
   const creatorLabel = creatorHandle ? `@${creatorHandle}` : "You";
@@ -33,7 +43,7 @@ function GivenTaskCard({ task }) {
 
       <div className="task-meta">
         <span>Reward: {Number(task.reward)}</span>
-        <span>Time: {task.estimated_minutes} min</span>
+        <span>Time: {formatHours(task.estimated_minutes)}</span>
         <span>Created by: {creatorLabel}</span>
         <span>Work state: {workStatus}</span>
       </div>
@@ -129,4 +139,3 @@ export default function GivenTasksPage() {
     </div>
   );
 }
-

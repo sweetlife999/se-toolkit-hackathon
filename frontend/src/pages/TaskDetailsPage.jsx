@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchMe } from "../api/auth";
-import { cancelTask, completeTask, getTask, takeTask } from "../api/tasks";
+import { cancelTask, completeTask, getTask, leaveTask, takeTask } from "../api/tasks";
 
 function TagList({ tags }) {
   if (!tags.length) {
@@ -17,6 +17,16 @@ function TagList({ tags }) {
       ))}
     </div>
   );
+}
+
+function formatHours(estimatedMinutes) {
+  const totalMinutes = Number(estimatedMinutes || 0);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+    return "-";
+  }
+
+  const hours = totalMinutes / 60;
+  return Number.isInteger(hours) ? `${hours} h` : `${hours.toFixed(1)} h`;
 }
 
 export default function TaskDetailsPage() {
@@ -102,6 +112,20 @@ export default function TaskDetailsPage() {
     }
   };
 
+  const onLeave = async () => {
+    setError("");
+    setActionLoading(true);
+
+    try {
+      const updated = await leaveTask(taskId);
+      setTask(updated);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="page-shell"><div className="panel">Loading task...</div></div>;
   }
@@ -121,8 +145,10 @@ export default function TaskDetailsPage() {
   const canTake = task?.status === "open" && !isCreator;
   const canComplete = task?.status === "in_work" && isCreator;
   const canCancel = isCreator && (task?.status === "open" || task?.status === "in_work");
+  const isAssignee = currentUser?.id === task?.assignee_id;
+  const canLeave = task?.status === "in_work" && isAssignee;
   const creatorLabel = task?.creator_telegram_username || "Unknown";
-  const assigneeLabel = task?.assignee_telegram_username || "none";
+  const assigneeLabel = task?.assignee_telegram_username || "-";
   const difficultyLabel = task?.difficulty ? `${task.difficulty[0].toUpperCase()}${task.difficulty.slice(1)}` : "Medium";
 
   return (
@@ -150,11 +176,18 @@ export default function TaskDetailsPage() {
           </div>
           <div className="task-meta">
             <span>Reward: {Number(task.reward)}</span>
-            <span>Estimated: {task.estimated_minutes} min</span>
+            <span>Estimated: {formatHours(task.estimated_minutes)}</span>
             <span>Creator: {creatorLabel}</span>
             <span>Assignee: {assigneeLabel}</span>
           </div>
         </div>
+
+        {task.status === "in_work" && isCreator && (
+          <p className="muted">Assignee works on this task. Click "Mark done" when work is delivered to transfer the reward.</p>
+        )}
+        {task.status === "in_work" && isAssignee && (
+          <p className="muted">Creator confirms completion and releases reward. You can leave this task if needed.</p>
+        )}
 
         <p className="task-description">{task.description}</p>
 
@@ -178,6 +211,11 @@ export default function TaskDetailsPage() {
               {actionLoading ? "Cancelling..." : "Cancel task"}
             </button>
           )}
+          {canLeave && (
+            <button type="button" className="secondary-button" onClick={onLeave} disabled={actionLoading}>
+              {actionLoading ? "Updating..." : "Leave task"}
+            </button>
+          )}
           <Link className="secondary-link" to="/tasks">
             Back to feed
           </Link>
@@ -193,5 +231,3 @@ export default function TaskDetailsPage() {
     </div>
   );
 }
-
-

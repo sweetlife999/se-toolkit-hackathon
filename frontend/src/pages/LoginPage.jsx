@@ -50,8 +50,8 @@ export default function LoginPage() {
           value={telegramUsername}
           onChange={(e) => setTelegramUsername(e.target.value)}
           placeholder="@username"
-          pattern="^@[A-Za-z0-9_]{3,63}$"
-          title="Handle must start with @ and contain only letters, numbers, or underscores"
+          pattern="^@[A-Za-z][A-Za-z0-9_]{2,62}$"
+          title="Handle must start with @, then a letter, and contain only letters, numbers, or underscores"
           required
         />
 
@@ -61,6 +61,7 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Your password"
+          minLength={6}
           required
         />
 

@@ -6,7 +6,7 @@ class AdminRemoveTaskPayload(BaseModel):
 
 
 class AdminAdjustUserBalancePayload(BaseModel):
-    user_handle: str = Field(min_length=4, max_length=64, pattern=r"^@[A-Za-z0-9_]{3,63}$")
+    user_handle: str = Field(min_length=4, max_length=64, pattern=r"^@[A-Za-z][A-Za-z0-9_]{2,62}$")
     amount: PositiveInt
 
 
@@ -16,13 +16,13 @@ class AdminAdjustAllBalancesPayload(BaseModel):
 
 
 class AdminDecrementUserBalancePayload(BaseModel):
-    user_handle: str = Field(min_length=4, max_length=64, pattern=r"^@[A-Za-z0-9_]{3,63}$")
+    user_handle: str = Field(min_length=4, max_length=64, pattern=r"^@[A-Za-z][A-Za-z0-9_]{2,62}$")
     amount: PositiveInt
     comment: str = Field(min_length=1, max_length=300)
 
 
 class AdminManageAdminPayload(BaseModel):
-    user_handle: str = Field(min_length=4, max_length=64, pattern=r"^@[A-Za-z0-9_]{3,63}$")
+    user_handle: str = Field(min_length=4, max_length=64, pattern=r"^@[A-Za-z][A-Za-z0-9_]{2,62}$")
 
 
 class AdminNotifyAllPayload(BaseModel):
@@ -31,4 +31,3 @@ class AdminNotifyAllPayload(BaseModel):
 
 class AdminActionResponse(BaseModel):
     detail: str
-

@@ -2,6 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getTasks, takeTask } from "../api/tasks";
 
+function formatHours(estimatedMinutes) {
+  const totalMinutes = Number(estimatedMinutes || 0);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+    return "-";
+  }
+
+  const hours = totalMinutes / 60;
+  return Number.isInteger(hours) ? `${hours} h` : `${hours.toFixed(1)} h`;
+}
+
 function TaskCard({ task, onTake, takingId }) {
   const isTaking = takingId === task.id;
   const creatorLabel = task.creator_telegram_username || "Unknown";
@@ -24,7 +34,7 @@ function TaskCard({ task, onTake, takingId }) {
 
       <div className="task-meta">
         <span>Reward: {Number(task.reward)}</span>
-        <span>Time: {task.estimated_minutes} min</span>
+        <span>Time: {formatHours(task.estimated_minutes)}</span>
         <span>Creator: {creatorLabel}</span>
       </div>
 
@@ -51,6 +61,9 @@ function TaskCard({ task, onTake, takingId }) {
 }
 
 export default function TaskFeedPage() {
+  const MIN_REWARD = 0;
+  const MAX_REWARD = 10000;
+
   const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [mode, setMode] = useState("");
@@ -61,7 +74,7 @@ export default function TaskFeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [takingId, setTakingId] = useState(null);
-  const normalizedMinReward = Math.max(0, Number(minReward) || 0);
+  const normalizedMinReward = Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(minReward) || 0));
 
   const loadTasks = async (mountedRef) => {
     setError("");
@@ -167,7 +180,7 @@ export default function TaskFeedPage() {
 
         <label>
           Tag
-          <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Search by tag" />
+          <input value={tag} onChange={(e) => setTag(e.target.value)} />
         </label>
 
         <label>
@@ -182,11 +195,7 @@ export default function TaskFeedPage() {
 
         <label>
           Search
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title, description, creator or tag"
-          />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} />
         </label>
 
         <div className="reward-filter">
@@ -195,21 +204,28 @@ export default function TaskFeedPage() {
             <strong>{normalizedMinReward}</strong>
           </div>
           <div className="reward-filter-row">
-            <input
-              type="range"
-              min="0"
-              max="10000"
-              step="1"
-              value={normalizedMinReward}
-              onChange={(e) => setMinReward(Number(e.target.value))}
-              aria-label="Minimum reward slider"
-            />
+            <div className="reward-filter-slider">
+              <input
+                type="range"
+                min={MIN_REWARD}
+                max={MAX_REWARD}
+                step="1"
+                value={normalizedMinReward}
+                onChange={(e) => setMinReward(Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(e.target.value) || 0)))}
+                aria-label="Minimum reward slider"
+              />
+              <div className="reward-filter-scale">
+                <span>0</span>
+                <span>10000</span>
+              </div>
+            </div>
             <input
               type="number"
-              min="0"
+              min={MIN_REWARD}
+              max={MAX_REWARD}
               step="1"
               value={normalizedMinReward}
-              onChange={(e) => setMinReward(Number(e.target.value))}
+              onChange={(e) => setMinReward(Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(e.target.value) || 0)))}
               placeholder="0"
               inputMode="numeric"
               aria-label="Minimum reward value"
@@ -244,4 +260,3 @@ export default function TaskFeedPage() {
     </div>
   );
 }
-
