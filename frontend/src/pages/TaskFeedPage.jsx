@@ -204,15 +204,21 @@ export default function TaskFeedPage() {
             <strong>{normalizedMinReward}</strong>
           </div>
           <div className="reward-filter-row">
-            <input
-              type="range"
-              min={MIN_REWARD}
-              max={MAX_REWARD}
-              step="1"
-              value={normalizedMinReward}
-              onChange={(e) => setMinReward(Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(e.target.value) || 0)))}
-              aria-label="Minimum reward slider"
-            />
+            <div className="reward-filter-slider">
+              <input
+                type="range"
+                min={MIN_REWARD}
+                max={MAX_REWARD}
+                step="1"
+                value={normalizedMinReward}
+                onChange={(e) => setMinReward(Math.min(MAX_REWARD, Math.max(MIN_REWARD, Number(e.target.value) || 0)))}
+                aria-label="Minimum reward slider"
+              />
+              <div className="reward-filter-scale">
+                <span>0</span>
+                <span>10000</span>
+              </div>
+            </div>
             <input
               type="number"
               min={MIN_REWARD}
@@ -224,10 +230,6 @@ export default function TaskFeedPage() {
               inputMode="numeric"
               aria-label="Minimum reward value"
             />
-          </div>
-          <div className="reward-filter-scale">
-            <span>0</span>
-            <span>10000</span>
           </div>
         </div>
 
