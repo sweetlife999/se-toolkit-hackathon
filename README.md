@@ -1,4 +1,5 @@
 # VibErrands
+# PROJECT IS ARCHIVED INDEFINETELY
 
 VibErrands is a full-stack errand marketplace where users create tasks, reserve rewards, take tasks, complete/cancel tasks, and track all balance changes in history.
 
